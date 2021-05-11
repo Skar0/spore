@@ -1,24 +1,20 @@
 from collections import defaultdict
 
 
-def gpg2bdd(gpg_path, manager):
+def pg2bdd(pg_path, manager):
     """
-    Encode a generalized parity game in extended PGsolver file format into a Binary Decision Diagram (BDD) using the
-    dd library.
-    :param gpg_path: path to the generalized parity game in extended PGsolver file
+    Encode a parity game in PGsolver file format into a Binary Decision Diagram (BDD) using the dd library.
+    :param pg_path: path to the parity game in PGsolver file
     :param manager: the BDD manager
-    :return: a bdd representation of the generalized parity game in the file gpg_path
+    :return: a bdd representation of the parity game in the file pg_path
     """
 
     # open file
-    with open(gpg_path, "r") as gpg_file:
+    with open(pg_path, "r") as pg_file:
 
-        # first line has max index for vertices and number of coloring functions, vertices and function index start at 0
-        info_line = gpg_file.readline().rstrip().split(" ")
+        info_line = pg_file.readline()  # first line has max index for vertices, vertices index start at 0
 
-        max_index = int(info_line[1])
-
-        nbr_functions = int(info_line[2][:-1])
+        max_index = int(info_line.rstrip().split(" ")[1][:-1])
 
         nbr_digits_vertices = len(bin(max_index)) - 2  # binary representation is prefixed by '0b'
 
@@ -35,17 +31,17 @@ def gpg2bdd(gpg_path, manager):
         p1_vertices = manager.false  # BDD for vertices of Player 1
         edges = manager.false  # BDD for edge relation
         # dictionary with BDD as key created on call (to avoid creating a BDD for non-existing colors)
-        colors = [defaultdict(lambda: manager.false) for _ in range(nbr_functions)]  # function indexing starts at 0
+        colors = defaultdict(lambda: manager.false)
         all_vertices = [None for _ in range(max_index + 1)]
 
         # all possible variables assignments of var (not in order)
         all_possibilities = manager.pick_iter(manager.true, vars)
 
         # iterate over nodes
-        for line in gpg_file:
+        for line in pg_file:
             infos = line.rstrip().split(" ")  # strip line to get info
             index = int(infos[0])
-            priorities = [int(p) for p in infos[1].split(",")]
+            priority = int(infos[1])
             player = int(infos[2])
 
             # current bdd for the node
@@ -57,9 +53,8 @@ def gpg2bdd(gpg_path, manager):
             # add current node to all nodes
             all_vertices[index] = vertex_bdd
 
-            # add vertex to the formula for correct color and correct function
-            for func in range(nbr_functions):
-                colors[func][priorities[func]] = colors[func][priorities[func]] | vertex_bdd
+            # add vertex to the formula for correct color
+            colors[priority] = colors[priority] | vertex_bdd
 
             # add vertex to correct player vertex BDD, 0 evaluates as false and 1 as true
             if player:
@@ -67,10 +62,10 @@ def gpg2bdd(gpg_path, manager):
             else:
                 p0_vertices = p0_vertices | vertex_bdd
 
-        gpg_file.seek(0)  # go back to first line
-        gpg_file.readline()  # first line has special info
+        pg_file.seek(0)  # go back to first line
+        pg_file.readline()  # first line has special info
 
-        for line in gpg_file:
+        for line in pg_file:
             infos = line.rstrip().split(" ")  # strip line to get info
             index = int(infos[0])
 
