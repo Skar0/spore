@@ -1,5 +1,5 @@
 from collections import defaultdict
-
+import arena as ar
 
 def gpg2bdd(gpg_path, manager):
     """
@@ -31,8 +31,8 @@ def gpg2bdd(gpg_path, manager):
         inv_mapping_bis = dict(zip(vars_bis, vars))
 
         # init the BDDs
-        p0_vertices = manager.false  # BDD for vertices of Player 0
-        p1_vertices = manager.false  # BDD for vertices of Player 1
+        player0_vertices = manager.false  # BDD for vertices of Player 0
+        player1_vertices = manager.false  # BDD for vertices of Player 1
         edges = manager.false  # BDD for edge relation
         # dictionary with BDD as key created on call (to avoid creating a BDD for non-existing colors)
         colors = [defaultdict(lambda: manager.false) for _ in range(nbr_functions)]  # function indexing starts at 0
@@ -63,9 +63,9 @@ def gpg2bdd(gpg_path, manager):
 
             # add vertex to correct player vertex BDD, 0 evaluates as false and 1 as true
             if player:
-                p1_vertices = p1_vertices | vertex_bdd
+                player1_vertices = player1_vertices | vertex_bdd
             else:
-                p0_vertices = p0_vertices | vertex_bdd
+                player0_vertices = player0_vertices | vertex_bdd
 
         gpg_file.seek(0)  # go back to first line
         gpg_file.readline()  # first line has special info
@@ -78,4 +78,21 @@ def gpg2bdd(gpg_path, manager):
                 successor = int(succ)
                 edges = edges | (all_vertices[index] & manager.let(mapping_bis, all_vertices[successor]))
 
-        return p0_vertices, p1_vertices, edges, colors
+        # create an Arena object and fill it in
+        arena = ar.Arena()
+        arena.vars = vars
+        arena.vars_bis = vars_bis
+        arena.all_vars = all_vars
+        arena.mapping_bis = mapping_bis
+        arena.inv_mapping_bis = inv_mapping_bis
+
+        arena.nbr_vertices = max_index + 1
+        arena.nbr_digits_vertices = nbr_digits_vertices
+        arena.nbr_functions = nbr_functions
+
+        arena.player0_vertices = player0_vertices
+        arena.player1_vertices = player1_vertices
+        arena.edges = edges
+        arena.colors = colors
+
+        return arena
