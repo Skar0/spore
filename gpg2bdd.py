@@ -1,6 +1,7 @@
 from collections import defaultdict
 import arena as ar
 
+
 def gpg2bdd(gpg_path, manager):
     """
     Encode a generalized parity game in extended PGsolver file format into a Binary Decision Diagram (BDD) using the
