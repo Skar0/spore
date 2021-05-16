@@ -1,4 +1,5 @@
 from collections import defaultdict
+import arena as ar
 
 
 def pg2bdd(pg_path, manager):
@@ -27,8 +28,8 @@ def pg2bdd(pg_path, manager):
         inv_mapping_bis = dict(zip(vars_bis, vars))
 
         # init the BDDs
-        p0_vertices = manager.false  # BDD for vertices of Player 0
-        p1_vertices = manager.false  # BDD for vertices of Player 1
+        player0_vertices = manager.false  # BDD for vertices of Player 0
+        player1_vertices = manager.false  # BDD for vertices of Player 1
         edges = manager.false  # BDD for edge relation
         # dictionary with BDD as key created on call (to avoid creating a BDD for non-existing colors)
         colors = defaultdict(lambda: manager.false)
@@ -58,9 +59,9 @@ def pg2bdd(pg_path, manager):
 
             # add vertex to correct player vertex BDD, 0 evaluates as false and 1 as true
             if player:
-                p1_vertices = p1_vertices | vertex_bdd
+                player1_vertices = player1_vertices | vertex_bdd
             else:
-                p0_vertices = p0_vertices | vertex_bdd
+                player0_vertices = player0_vertices | vertex_bdd
 
         pg_file.seek(0)  # go back to first line
         pg_file.readline()  # first line has special info
@@ -73,12 +74,29 @@ def pg2bdd(pg_path, manager):
                 successor = int(succ)
                 edges = edges | (all_vertices[index] & manager.let(mapping_bis, all_vertices[successor]))
 
-        return p0_vertices, p1_vertices, edges, colors
+        # create an Arena object and fill it in
+        arena = ar.Arena()
+        arena.vars = vars
+        arena.vars_bis = vars_bis
+        arena.all_vars = all_vars
+        arena.mapping_bis = mapping_bis
+        arena.inv_mapping_bis = inv_mapping_bis
+
+        arena.nbr_vertices = max_index + 1
+        arena.nbr_digits_vertices = nbr_digits_vertices
+        arena.nbr_functions = 1
+
+        arena.player0_vertices = player0_vertices
+        arena.player1_vertices = player1_vertices
+        arena.edges = edges
+        arena.colors = colors
+
+        return arena
 
 
 def int2bdd(index, vars, nbr_vars):
     """
-    Transforms an index in base 10 into a dictionary of Booleans.
+    Transforms an index in base 10 into a dictionary of Booleans. Variable x0 is the most significant bit.
     :param index: the index in base 10
     :param vars: the variables declared in the bdd
     :param nbr_vars: number of variables declared
@@ -89,7 +107,24 @@ def int2bdd(index, vars, nbr_vars):
 
     binary_representation = format(index,
                                    '0' + str(nbr_vars) + 'b')  # string containing the binary representation of index
-    return {vars[i]: bool(int(binary_representation[-(i + 1)])) for i in range(nbr_vars)}
+    return {vars[i]: bool(int(binary_representation[i])) for i in range(nbr_vars)}
+
+
+def bdd2int(dict_encoding, vars, nbr_vars):
+    """
+    Transforms a dictionary of Booleans into a base 10 number. Variable x0 is the most significant bit for the binary
+    representation of the number in the dictionary.
+    :param dict_encoding: dictionary encoding of the binary repreentation of the number
+    :param vars: the variables declared in the bdd
+    :param nbr_vars: number of variables declared
+    :return: a base 10 number corresponding to the binary representation contained in the dictionary.
+    """
+
+    binary_representation = ""
+    for i in range(nbr_vars):
+        binary_representation = binary_representation + str(int(dict_encoding[vars[i]]))
+
+    return int(binary_representation, 2)
 
 
 def pg2bdd_direct_encoding(pg_path, manager):
@@ -123,8 +158,8 @@ def pg2bdd_direct_encoding(pg_path, manager):
         inv_mapping_bis = dict(zip(vars_bis, vars))
 
         # init the BDDs
-        p0_vertices = manager.false  # BDD for vertices of Player 0
-        p1_vertices = manager.false  # BDD for vertices of Player 1
+        player0_vertices = manager.false  # BDD for vertices of Player 0
+        player1_vertices = manager.false  # BDD for vertices of Player 1
         edges = manager.false  # BDD for edge relation
         # dictionary with BDD as key created on call (to avoid creating a BDD for non-existing colors)
         colors = defaultdict(lambda: manager.false)
@@ -153,9 +188,9 @@ def pg2bdd_direct_encoding(pg_path, manager):
 
             # add vertex to correct player vertex BDD, 0 evaluates as false and 1 as true
             if player:
-                p1_vertices = p1_vertices | vertex_bdd
+                player1_vertices = player1_vertices | vertex_bdd
             else:
-                p0_vertices = p0_vertices | vertex_bdd
+                player0_vertices = player0_vertices | vertex_bdd
 
             # TODO we use the encoding from int to bdd node in order to get a vertex and add it to the BDD
             # TODO remembering created BDD nodes in a list like previously could be more efficient
@@ -167,4 +202,21 @@ def pg2bdd_direct_encoding(pg_path, manager):
                 edges = edges | (manager.cube(int2bdd(index, vars, nbr_digits_vertices)) &
                                  manager.let(mapping_bis, manager.cube(int2bdd(successor, vars, nbr_digits_vertices))))
 
-        return p0_vertices, p1_vertices, edges, colors
+        # create an Arena object and fill it in
+        arena = ar.Arena()
+        arena.vars = vars
+        arena.vars_bis = vars_bis
+        arena.all_vars = all_vars
+        arena.mapping_bis = mapping_bis
+        arena.inv_mapping_bis = inv_mapping_bis
+
+        arena.nbr_vertices = max_index + 1
+        arena.nbr_digits_vertices = nbr_digits_vertices
+        arena.nbr_functions = 1
+
+        arena.player0_vertices = player0_vertices
+        arena.player1_vertices = player1_vertices
+        arena.edges = edges
+        arena.colors = colors
+
+        return arena
