@@ -39,3 +39,37 @@ def dict2int(dict_encoding, vars):
         binary_representation = binary_representation + str(int(dict_encoding[vars[i]]))
 
     return int(binary_representation, 2)
+
+
+def bdd2int(bdd, vars, manager, mapping=None):
+    """
+    Transforms all vertex indexes represented by a BDD into a list of the corresponding indexes in base 10. If a value
+    for mapping is provided, then the base 10 value of the index in the BDD correspond to a different index in the
+    original game, contained in mapping[index]. Otherwise, the index was encoded in the BDD as-is.
+    :param bdd: a BDD representing a set of vertices
+    :type bdd: dd.cudd.Function
+    :param vars: list of variables used to represent the vertices in the BDD
+    :type vars: list of str
+    :param manager: the BDD manager
+    :type manager: dd.cudd.BDD
+    :param mapping: mapping for the correspondence between int index and BDD  node representation
+    :type mapping: list of dd.cudd.Function
+    :return: a list of indexes corresponding to the provided BDD
+    :rtype: list of int
+    """
+
+    result = []
+
+    for dict_representation in manager.pick_iter(bdd, vars):
+
+        if not mapping:
+            int_representation = dict2int(dict_representation, vars)
+            result.append(int_representation)
+        else:
+            # look for the index corresponding to that dict_representation in the mapping
+            for index in range(len(mapping)):
+                # mapping[index] is a BDD node with a single assigment of vars that makes it true
+                if dict_representation == next(manager.pick_iter(mapping[index], vars)):
+                    result.append(index)
+
+    return result
