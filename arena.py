@@ -65,6 +65,6 @@ class Arena:
         subarena.player0_vertices = player0_vertices_subarena
         subarena.player1_vertices = player1_vertices_subarena
         subarena.edges = edges_subarena
-        subarena.colors = priorities_subarena
+        subarena.priorities = priorities_subarena
 
         return subarena
