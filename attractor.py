@@ -3,16 +3,22 @@ import dd.cudd as bdd_func
 
 def attractor(arena, s, player, manager):
     """
-    Computes the attractor for player for the set s in the provided game arena
+    Computes the attractor of set s for player in the arena.
     :param arena: the arena in which we compute the attractor
+    :type arena: Arena
     :param s: the set for which we compute the attractor
+    :type s: dd.cudd.Function
     :param player: the player for which we compute the attractor
-    :param manager: the BDD manager object
+    :type player: int
+    :param manager: the BDD manager
+    :type manager: dd.cudd.BDD
     :return: the computed attractor
+    :rtype: dd.cudd.Function
     """
 
-    old_attractor = manager.false  # start with empty set
-    new_attractor = s  # at first attractor only contains s
+    old_attractor = manager.false
+    new_attractor = s  # at first, the attractor only contains s
+
     # while a fixpoint is not reached
     while old_attractor != new_attractor:
 
@@ -23,11 +29,10 @@ def attractor(arena, s, player, manager):
 
         # BDD representing vertices with at least one successor in the old attractor
         bdd_vertices_one_succ = arena.edges & old_attractor_prime
-
         vertices_one_succ = manager.exist(arena.vars_bis, bdd_vertices_one_succ)
 
-        # bdd representing vertices with at least one successor outside the previous attractor
-        # TODO I assume that vertices in the negation that don't exist are ignored since they dont belong to arena.edges
+        # BDD representing vertices with at least one successor outside the previous attractor
+        # TODO are the vertices in the negation that don't exist ignored since they dont belong to arena.edges ?
         bdd_vertices_all_succ = arena.edges & ~old_attractor_prime
 
         # vertices for which there does not exist a successor outside the previous attractor
@@ -46,21 +51,27 @@ def attractor(arena, s, player, manager):
     return new_attractor
 
 
-def attractor_optimized(arena, s, player, manager):
+def attractor_cudd(arena, s, player, manager):
     """
-    Computes the attractor for player for the set s in the provided game arena. This is an optimized version using built
-    in functions from CUDD.
+    Computes the attractor of set s for player in the arena. This version uses cudd-specific functions.
     :param arena: the arena in which we compute the attractor
+    :type arena: Arena
     :param s: the set for which we compute the attractor
+    :type s: dd.cudd.Function
     :param player: the player for which we compute the attractor
-    :param manager: the BDD manager object
+    :type player: int
+    :param manager: the BDD manager
+    :type manager: dd.cudd.BDD
     :return: the computed attractor
+    :rtype: dd.cudd.Function
     """
 
-    old_attractor = manager.false  # start with empty set
+    old_attractor = manager.false
     new_attractor = s  # at first attractor only contains s
+
     # while a fixpoint is not reached
     while old_attractor != new_attractor:
+
         old_attractor = new_attractor
 
         # BDD representing the old attractor set, using prime variables
@@ -69,9 +80,9 @@ def attractor_optimized(arena, s, player, manager):
         # BDD representing vertices with at least one successor in the old attractor
         vertices_one_succ = bdd_func.and_exists(arena.edges, old_attractor_prime, arena.vars_bis)
 
-        # bdd representing vertices with at least one successor outside the previous attractor
-        # TODO I assume that vertices in the negation that don't exist are ignored since they dont belong to arena.edges
-        # TODO is complementing the replaced attractor with prime vars same as replacing variables in complement of att
+        # BDD representing vertices with at least one successor outside the previous attractor
+        # TODO are the vertices in the negation that don't exist ignored since they dont belong to arena.edges ?
+        # TODO is complementing the replaced attractor with prime vars same as replacing variables in complement of att?
         vertices_all_succ = ~bdd_func.and_exists(arena.edges, ~old_attractor_prime, arena.vars_bis)
 
         # if we compute the attractor for player 0
