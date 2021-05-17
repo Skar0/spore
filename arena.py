@@ -11,7 +11,7 @@ class Arena:
         # storing all variables and mappings needed for BDD operations
         self.vars = None
         self.vars_bis = None
-        self.all_vars = None
+        self.all_vars = None # TODO check if actually used
         self.mapping_bis = None
         self.inv_mapping_bis = None
 
@@ -21,7 +21,7 @@ class Arena:
         self.nbr_functions = 1
 
         # classical arena information
-        self.player0_vertices = None
+        self.player0_vertices = None # TODO check if a BDD for all vertices is required
         self.player1_vertices = None
         self.edges = None
         self.priorities = None  # priorities[i] yields the ith priority function in a generalized parity game arena

@@ -4,17 +4,19 @@ import arena as ar
 
 def gpg2bdd(gpg_path, manager):
     """
-    Encode a generalized parity game in extended PGsolver file format into a Binary Decision Diagram (BDD) using the
-    dd library.
-    :param gpg_path: path to the generalized parity game in extended PGsolver file
+    Loads a generalized parity game from file and represent it as a Binary Decision Diagram (BDD).
+    :param gpg_path: path to the .gpg file containing a generalized parity game in extended PGSolver format
+    :type gpg_path: str
     :param manager: the BDD manager
-    :return: a bdd representation of the generalized parity game in the file gpg_path
+    :type manager: dd.cudd.BDD
+    :return: an arena object for the arena provided in the file and a list of its vertices represented by BDDs
+    :rtype: Arena, list of dd.cudd.Function
     """
 
     # open file
     with open(gpg_path, "r") as gpg_file:
 
-        # first line has max index for vertices and number of coloring functions, vertices and function index start at 0
+        # first line has max index for vertices and number of priority functions; vertices and function index start at 0
         info_line = gpg_file.readline().rstrip().split(" ")
 
         max_index = int(info_line[1])
@@ -34,33 +36,32 @@ def gpg2bdd(gpg_path, manager):
         # init the BDDs
         player0_vertices = manager.false  # BDD for vertices of Player 0
         player1_vertices = manager.false  # BDD for vertices of Player 1
-        edges = manager.false  # BDD for edge relation
-        # dictionary with BDD as key created on call (to avoid creating a BDD for non-existing colors)
-        colors = [defaultdict(lambda: manager.false) for _ in range(nbr_functions)]  # function indexing starts at 0
+        edges = manager.false  # BDD for edges
+        # dictionary with BDD as key created on call (to avoid creating a BDD for non-existing priorities)
+        priorities = [defaultdict(lambda: manager.false) for _ in range(nbr_functions)]  # function indexing starts at 0
         all_vertices = [None for _ in range(max_index + 1)]
 
-        # all possible variables assignments of var (not in order)
+        # all possible variables assignments of var (not yielded in order)
         all_possibilities = manager.pick_iter(manager.true, vars)
 
-        # iterate over nodes
+        # iterate over vertices in the file
         for line in gpg_file:
             infos = line.rstrip().split(" ")  # strip line to get info
             index = int(infos[0])
-            priorities = [int(p) for p in infos[1].split(",")]
+            prios = [int(p) for p in infos[1].split(",")]
             player = int(infos[2])
 
-            # current bdd for the node
+            # current BDD for the vertex
             vertex_dict = next(all_possibilities)  # dictionary encoding the valuation corresponding to the vertex
             vertex_bdd = manager.cube(vertex_dict)  # create a BDD node for this valuation
+            # TODO we need to remember the correspondence between BDD node and vertex for later
 
-            # TODO we might need to remember the correspondence to later decide whether vertex 0 is won by Player 0
-
-            # add current node to all nodes
+            # add current node to all nodes at the correct index
             all_vertices[index] = vertex_bdd
 
-            # add vertex to the formula for correct color and correct function
+            # add vertex to the formula for correct priority and correct function
             for func in range(nbr_functions):
-                colors[func][priorities[func]] = colors[func][priorities[func]] | vertex_bdd
+                priorities[func][prios[func]] = priorities[func][prios[func]] | vertex_bdd
 
             # add vertex to correct player vertex BDD, 0 evaluates as false and 1 as true
             if player:
@@ -68,8 +69,8 @@ def gpg2bdd(gpg_path, manager):
             else:
                 player0_vertices = player0_vertices | vertex_bdd
 
-        gpg_file.seek(0)  # go back to first line
-        gpg_file.readline()  # first line has special info
+        gpg_file.seek(0)  # go back to first line of the file
+        gpg_file.readline()  # first line has special info, pass it
 
         for line in gpg_file:
             infos = line.rstrip().split(" ")  # strip line to get info
@@ -94,6 +95,6 @@ def gpg2bdd(gpg_path, manager):
         arena.player0_vertices = player0_vertices
         arena.player1_vertices = player1_vertices
         arena.edges = edges
-        arena.colors = colors
+        arena.priorities = priorities
 
-        return arena
+        return arena, all_vertices
