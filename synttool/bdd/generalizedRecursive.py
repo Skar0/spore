@@ -1,4 +1,4 @@
-from bdd.attractor import attractor_cudd
+from attractor import attractor_cudd
 from collections import defaultdict
 
 

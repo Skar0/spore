@@ -1,6 +1,6 @@
 from collections import defaultdict
-import bdd.arena as ar
-import bdd.misc
+import arena as ar
+import misc
 
 
 def pg2bdd(pg_path, manager):

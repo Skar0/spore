@@ -1,5 +1,5 @@
 from collections import defaultdict
-import bdd.arena as ar
+import arena as ar
 
 def gpg2bdd(gpg_path, manager):
     """

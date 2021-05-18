@@ -4,27 +4,25 @@ class Arena:
     """
     Class used to represent a game arena. Internally, the arena is represented using lists and dictionaries.
     """
-    nbr_vertices: int
-    nbr_functions: int
-    vertices: list[int]
-    player: defaultdict[int, int]
-    priorities: defaultdict[int, list[int]]
-    vertex_priorities: defaultdict[int, list[int]]
-    successors: defaultdict[int, list[int]]
-    predecessors: defaultdict[int, list[int]]
 
     def __init__(self):
 
         # classical arena information
-        self.nbr_vertices = 0
-        self.nbr_functions = 1
-
-        self.vertices = None  # list of all vertices
-        self.player = None  # defaultdict of int (vertex): int (player for that vertex)
-        self.priorities = None  # list of defaultdict of int (priority): list of int (vertices of that priority)
-        self.vertex_priorities = None  # defaultdict of int (vertex): list of int (priorities for that vertex)
-        self.successors = None  # defaultdict of int (vertex): list of int (successors)
-        self.predecessors = None  # defaultdict of int (vertex): list of int (predecessors)
+        self.nbr_vertices = 0           # type: int
+        self.nbr_functions = 1          # type: int
+ 
+        # list of all vertices 
+        self.vertices = None            # type: list[int]
+        # defaultdict of int (vertex): int (player for that vertex)
+        self.player = None              # type: defaultdict[int, int]
+        # list of defaultdict of int (priority): list of int (vertices of that priority)
+        self.priorities = None          # type: defaultdict[int, list[int]]
+        # defaultdict of int (vertex): list of int (priorities for that vertex)
+        self.vertex_priorities = None   # type: defaultdict[int, list[int]]
+        # defaultdict of int (vertex): list of int (successors)
+        self.successors = None          # type: defaultdict[int, list[int]]
+        # defaultdict of int (vertex): list of int (predecessors)
+        self.predecessors = None        # type: defaultdict[int, list[int]]
 
     def subarena(self, removed):
         """

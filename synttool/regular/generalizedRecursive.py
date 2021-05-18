@@ -1,6 +1,6 @@
 from collections import defaultdict
 
-from regular.attractor import attractor
+from attractor import attractor
 
 
 def transform_game(arena):

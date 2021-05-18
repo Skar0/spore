@@ -1,7 +1,8 @@
 import unittest
 
-from regular.generalizedRecursive import generalized_recursive
-from regular.gpg2arena import gpg2arena
+
+from synttool.regular.generalizedRecursive import generalized_recursive
+from synttool.regular.gpg2arena import gpg2arena
 
 
 class testGeneralizedRecursive(unittest.TestCase):

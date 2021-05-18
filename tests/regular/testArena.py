@@ -1,9 +1,7 @@
 import unittest
 from collections import defaultdict
 
-from regular.gpg2arena import gpg2arena
-from bdd.misc import bdd2int
-from bdd.pg2bdd import pg2bdd
+from synttool.regular.gpg2arena import gpg2arena
 
 
 def retrieve_expected_pg_arena(path):

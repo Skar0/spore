@@ -2,9 +2,9 @@ import unittest
 import dd.cudd as _bdd
 from collections import defaultdict
 
-from bdd import gpg2bdd
-from bdd.misc import bdd2int
-from bdd.pg2bdd import pg2bdd
+from synttool.bdd import gpg2bdd
+from synttool.bdd.misc import bdd2int
+from synttool.bdd.pg2bdd import pg2bdd
 
 
 def retrieve_expected_pg_arena(path):

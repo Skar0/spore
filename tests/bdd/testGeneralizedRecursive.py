@@ -1,9 +1,9 @@
 import unittest
 import dd.cudd as bdd
 
-from bdd.generalizedRecursive import generalized_recursive
-from bdd.gpg2bdd import gpg2bdd
-from bdd.misc import bdd2int
+from synttool.bdd.generalizedRecursive import generalized_recursive
+from synttool.bdd.gpg2bdd import gpg2bdd
+from synttool.bdd.misc import bdd2int
 
 
 class testGeneralizedRecursive(unittest.TestCase):
