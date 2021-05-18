@@ -1,9 +1,7 @@
 from collections import defaultdict
 
-from attractor import attractor
 
-
-def transform_game(arena):
+cdef list transform_game(Arena arena):
     """
     Complement the priorities in the provided arena. That is, add 1 to each priority. Also record the maximal priority
     occurring in the arena and make sure that it is odd (adding +1 to actual maximum if it is not the case).
@@ -12,6 +10,9 @@ def transform_game(arena):
     :return: the maximal priorities occurring in the complemented arena
     :rtype: list of int
     """
+    cdef int function_index, priority, vertex
+    cdef dict new_dict
+    cdef list max_priorities, vertices
 
     max_priorities = [-1] * arena.nbr_functions
 
@@ -42,7 +43,7 @@ def transform_game(arena):
     return max_priorities
 
 
-def generalized_recursive(arena):
+cdef list generalized_recursive(Arena arena):
     """
     Solve the generalized parity game provided in arena using the recursive algorithm.
     :param arena: a game arena
@@ -50,13 +51,14 @@ def generalized_recursive(arena):
     :return: the solution of the provided generalized parity game, that is the set of vertices won by each player
     :rtype: list of int, list of int
     """
+    cdef list max_priorities
 
     max_priorities = transform_game(arena)
 
     return disj_parity_win(arena, max_priorities)
 
 
-def disj_parity_win(arena, max_priorities):
+cdef tuple disj_parity_win(Arena arena, list max_priorities):
     """
     Procedure to solve the generalized parity game provided in arena using the recursive algorithm.
     :param arena: a game arena
@@ -66,6 +68,9 @@ def disj_parity_win(arena, max_priorities):
     :return: the solution of the provided generalized parity game, that is the set of vertices won by each player
     :rtype: list of int, list of int
     """
+    cdef int value, func_index
+    cdef list attMaxOdd, attMaxEven, copy_max_priorities
+    cdef Arena G1, H1
 
     # For the correctness argument to work, and for the base case too,
     # we need the max value of each priority to be odd!

@@ -1,8 +1,7 @@
 from collections import defaultdict
-import arena as ar
 
 
-def gpg2arena(gpg_path):
+cdef Arena gpg2arena(str gpg_path):
     """
     Loads a generalized parity game from file and represent it as an Arena object.
     :param gpg_path: path to the .gpg file containing a generalized parity game in extended PGSolver format
@@ -50,7 +49,7 @@ def gpg2arena(gpg_path):
                 successors[index].append(successor)
                 predecessors[successor].append(index)
 
-        arena = ar.Arena()
+        arena = Arena()
 
         arena.nbr_vertices = nbr_vertices
         arena.nbr_functions = nbr_functions

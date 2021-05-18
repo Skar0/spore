@@ -3,6 +3,10 @@ __pycache__
 *.pyc
 env/
 
+# Cython
+*.c
+*.cpp
+
 build/
 dist/
 *.egg-info
