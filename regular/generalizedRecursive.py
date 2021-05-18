@@ -128,3 +128,11 @@ def disj_parity_win(arena, max_priorities):
                 return W1, B
 
     return arena.vertices, []
+
+"""
+import gpg2arena
+arena = gpg2arena.gpg2arena("../arenas/gpg/example_4.gpg")
+w0, w1 = generalized_recursive(arena)
+print(w0)
+print(w1)
+"""
