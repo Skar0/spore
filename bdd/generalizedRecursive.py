@@ -1,4 +1,4 @@
-import attractor
+from bdd.attractor import attractor_cudd
 from collections import defaultdict
 
 
@@ -76,14 +76,14 @@ def disj_par_win(arena, max_priorities, manager):
 
         if max_priorities[function_index] != 1:
 
-            a0 = attractor.attractor_cudd(arena,
-                                     arena.priorities[function_index][max_priorities[function_index]],
-                                     0,
-                                     manager)
+            a0 = attractor_cudd(arena,
+                                    arena.priorities[function_index][max_priorities[function_index]],
+                                    0,
+                                    manager)
 
             g_bar = arena.subarena(~a0, manager)
 
-            a1 = attractor.attractor_cudd(g_bar,
+            a1 = attractor_cudd(g_bar,
                                      g_bar.priorities[function_index][max_priorities[function_index] - 1],
                                      1,
                                      manager)
@@ -100,9 +100,9 @@ def disj_par_win(arena, max_priorities, manager):
                         or w1 == (h.player0_vertices | h.player1_vertices):
                     break
 
-                a0 = attractor.attractor_cudd(g_bar, w0, 0, manager)
+                a0 = attractor_cudd(g_bar, w0, 0, manager)
                 g_bar = g_bar.subarena(~a0, manager)
-                a1 = attractor.attractor_cudd(g_bar,
+                a1 = attractor_cudd(g_bar,
                                          g_bar.priorities[function_index][max_priorities[function_index] - 1],
                                          1,
                                          manager)
@@ -112,7 +112,7 @@ def disj_par_win(arena, max_priorities, manager):
             q_bar = g_bar.player0_vertices | g_bar.player1_vertices
 
             if w1 == (h.player0_vertices | h.player1_vertices) and not q_bar == manager.false:
-                a1 = attractor.attractor_cudd(arena,
+                a1 = attractor_cudd(arena,
                                          q_bar,
                                          1,
                                          manager)
@@ -155,3 +155,14 @@ def generalized_recursive_with_psolver(arena, psolver, manager):
     (w0, w1) = disj_par_win(g_bar, max_priorities, manager)
 
     return w0 | z0, w1 | z1, psolver_solved
+
+"""
+import gpg2bdd
+import dd.cudd as _bdd
+import misc
+manager = _bdd.BDD()
+arena, all_vertices = gpg2bdd.gpg2bdd("../arenas/gpg/example_4.gpg", manager)
+w0, w1 = generalized_recursive(arena, manager)
+print(misc.bdd2int(w0, arena.vars, manager, all_vertices))
+print(misc.bdd2int(w1, arena.vars, manager, all_vertices))
+"""
