@@ -1,5 +1,5 @@
 from collections import defaultdict
-import arena as ar
+import regular.arena as ar
 
 
 def gpg2arena(gpg_path):
