@@ -1,9 +1,10 @@
 import unittest
-import pg2bdd
-import gpg2bdd
-import tools
-import dd.cudd as bdd
+import dd.cudd as _bdd
 from collections import defaultdict
+
+from bdd import gpg2bdd
+from bdd.misc import bdd2int
+from bdd.pg2bdd import pg2bdd
 
 
 def retrieve_expected_pg_arena(path):
@@ -96,12 +97,14 @@ class TestArena(unittest.TestCase):
     """
 
     def setUp(self):
-        self.pg_test_files_path = "arenas/pg/"
-        self.pg_test_files = ["example_1_pg.gpg", "example_2_pg.gpg", "example_3_pg.gpg", "example_4_pg.gpg", "example_5_pg.gpg"]
+        self.pg_test_files_path = "../../arenas/pg/"
+        self.pg_test_files = ["example_1.pg", "example_2.pg", "example_3.pg", "example_4.pg",
+                              "example_5.pg"]
         self.pg_expected_values = [] * len(self.pg_test_files)
 
-        self.gpg_test_files_path = "arenas/gpg/"
-        self.gpg_test_files = ["example_1.gpg", "example_2.gpg", "example_3.gpg", "example_4.gpg"]
+        self.gpg_test_files_path = "../../arenas/gpg/"
+        self.gpg_test_files = ["example_1.gpg", "example_2.gpg", "example_3.gpg", "example_4.gpg", "example_1_pg.gpg",
+                               "example_2_pg.gpg", "example_3_pg.gpg", "example_4_pg.gpg", "example_5_pg.gpg"]
         self.gpg_expected_values = [] * len(self.gpg_test_files)
 
     def test_pg_arena_creation(self):
@@ -113,10 +116,10 @@ class TestArena(unittest.TestCase):
 
             file_path = self.pg_test_files_path + file
 
-            manager = bdd.BDD()
+            manager = _bdd.BDD()
 
             # load arena and get number of vertices
-            arena, vertices_bdd = pg2bdd.pg2bdd(file_path, manager)
+            arena, vertices_bdd = pg2bdd(file_path, manager)
 
             nbr_vertices = len(vertices_bdd)
 
@@ -124,20 +127,20 @@ class TestArena(unittest.TestCase):
 
             self.assertEqual(arena.nbr_functions, 1)
 
-            actual_player0 = set(tools.bdd2int(arena.player0_vertices, arena.vars, manager, mapping=vertices_bdd))
+            actual_player0 = set(bdd2int(arena.player0_vertices, arena.vars, manager, mapping=vertices_bdd))
 
             expected_player0 = set(expected_arena[0])
 
             self.assertEqual(expected_player0, actual_player0)
 
-            actual_player1 = set(tools.bdd2int(arena.player1_vertices, arena.vars, manager, mapping=vertices_bdd))
+            actual_player1 = set(bdd2int(arena.player1_vertices, arena.vars, manager, mapping=vertices_bdd))
 
             expected_player1 = set(expected_arena[1])
 
             self.assertEqual(expected_player1, actual_player1)
 
             for priority, s in expected_arena[2].items():
-                actual_priority = set(tools.bdd2int(arena.priorities[priority], arena.vars, manager,
+                actual_priority = set(bdd2int(arena.priorities[priority], arena.vars, manager,
                                                     mapping=vertices_bdd))
 
                 expected_priority = set(s)
@@ -153,7 +156,7 @@ class TestArena(unittest.TestCase):
 
                 edges_vertex = manager.let(arena.inv_mapping_bis, edges_vertex)
 
-                actual_successors = set(tools.bdd2int(edges_vertex, arena.vars, manager,
+                actual_successors = set(bdd2int(edges_vertex, arena.vars, manager,
                                                       mapping=vertices_bdd))
 
                 expected_successors = set(expected_arena[3][index])
@@ -169,7 +172,7 @@ class TestArena(unittest.TestCase):
 
             file_path = self.gpg_test_files_path + file
 
-            manager = bdd.BDD()
+            manager = _bdd.BDD()
 
             # load arena and get number of vertices
             arena, vertices_bdd = gpg2bdd.gpg2bdd(file_path, manager)
@@ -180,13 +183,13 @@ class TestArena(unittest.TestCase):
 
             self.assertEqual(arena.nbr_functions, len(expected_arena[2]))
 
-            actual_player0 = set(tools.bdd2int(arena.player0_vertices, arena.vars, manager, mapping=vertices_bdd))
+            actual_player0 = set(bdd2int(arena.player0_vertices, arena.vars, manager, mapping=vertices_bdd))
 
             expected_player0 = set(expected_arena[0])
 
             self.assertEqual(expected_player0, actual_player0)
 
-            actual_player1 = set(tools.bdd2int(arena.player1_vertices, arena.vars, manager, mapping=vertices_bdd))
+            actual_player1 = set(bdd2int(arena.player1_vertices, arena.vars, manager, mapping=vertices_bdd))
 
             expected_player1 = set(expected_arena[1])
 
@@ -194,7 +197,7 @@ class TestArena(unittest.TestCase):
 
             for func in range(arena.nbr_functions):
                 for priority, s in expected_arena[2][func].items():
-                    actual_priority = set(tools.bdd2int(arena.priorities[func][priority], arena.vars, manager,
+                    actual_priority = set(bdd2int(arena.priorities[func][priority], arena.vars, manager,
                                                         mapping=vertices_bdd))
 
                     expected_priority = set(s)
@@ -210,7 +213,7 @@ class TestArena(unittest.TestCase):
 
                 edges_vertex = manager.let(arena.inv_mapping_bis, edges_vertex)
 
-                actual_successors = set(tools.bdd2int(edges_vertex, arena.vars, manager,
+                actual_successors = set(bdd2int(edges_vertex, arena.vars, manager,
                                                       mapping=vertices_bdd))
 
                 expected_successors = set(expected_arena[3][index])
