@@ -76,14 +76,14 @@ def disj_par_win(arena, max_priorities, manager):
 
         if max_priorities[function_index] != 1:
 
-            a0 = attractor.attractor(arena,
+            a0 = attractor.attractor_cudd(arena,
                                      arena.priorities[function_index][max_priorities[function_index]],
                                      0,
                                      manager)
 
             g_bar = arena.subarena(~a0, manager)
 
-            a1 = attractor.attractor(g_bar,
+            a1 = attractor.attractor_cudd(g_bar,
                                      g_bar.priorities[function_index][max_priorities[function_index] - 1],
                                      1,
                                      manager)
@@ -100,9 +100,9 @@ def disj_par_win(arena, max_priorities, manager):
                         or w1 == (h.player0_vertices | h.player1_vertices):
                     break
 
-                a0 = attractor.attractor(g_bar, w0, 0, manager)
+                a0 = attractor.attractor_cudd(g_bar, w0, 0, manager)
                 g_bar = g_bar.subarena(~a0, manager)
-                a1 = attractor.attractor(g_bar,
+                a1 = attractor.attractor_cudd(g_bar,
                                          g_bar.priorities[function_index][max_priorities[function_index] - 1],
                                          1,
                                          manager)
@@ -112,7 +112,7 @@ def disj_par_win(arena, max_priorities, manager):
             q_bar = g_bar.player0_vertices | g_bar.player1_vertices
 
             if w1 == (h.player0_vertices | h.player1_vertices) and not q_bar == manager.false:
-                a1 = attractor.attractor(arena,
+                a1 = attractor.attractor_cudd(arena,
                                          q_bar,
                                          1,
                                          manager)
