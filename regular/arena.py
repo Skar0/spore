@@ -1,5 +1,6 @@
 from collections import defaultdict
 
+
 class Arena:
     """
     Class used to represent a game arena. Internally, the arena is represented using lists and dictionaries.
@@ -8,21 +9,21 @@ class Arena:
     def __init__(self):
 
         # classical arena information
-        self.nbr_vertices = 0           # type: int
-        self.nbr_functions = 1          # type: int
- 
+        self.nbr_vertices = 0  # type: int
+        self.nbr_functions = 1  # type: int
+
         # list of all vertices 
-        self.vertices = None            # type: list[int]
+        self.vertices = None  # type: list[int]
         # defaultdict of int (vertex): int (player for that vertex)
-        self.player = None              # type: defaultdict[int, int]
+        self.player = None  # type: defaultdict[int, int]
         # list of defaultdict of int (priority): list of int (vertices of that priority)
-        self.priorities = None          # type: defaultdict[int, list[int]]
+        self.priorities = None  # type: defaultdict[int, list[int]]
         # defaultdict of int (vertex): list of int (priorities for that vertex)
-        self.vertex_priorities = None   # type: defaultdict[int, list[int]]
+        self.vertex_priorities = None  # type: defaultdict[int, list[int]]
         # defaultdict of int (vertex): list of int (successors)
-        self.successors = None          # type: defaultdict[int, list[int]]
+        self.successors = None  # type: defaultdict[int, list[int]]
         # defaultdict of int (vertex): list of int (predecessors)
-        self.predecessors = None        # type: defaultdict[int, list[int]]
+        self.predecessors = None  # type: defaultdict[int, list[int]]
 
     def subarena(self, removed):
         """

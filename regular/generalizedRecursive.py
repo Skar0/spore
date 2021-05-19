@@ -1,5 +1,6 @@
 from collections import defaultdict
-from attractor import attractor
+from regular.attractor import attractor
+
 
 def transform_game(arena):
     """
@@ -10,6 +11,7 @@ def transform_game(arena):
     :return: the maximal priorities occurring in the complemented arena
     :rtype: list of int
     """
+
     max_priorities = [-1] * arena.nbr_functions
 
     # TODO should we maintain existing priorities somewhere ? Check if this function is a bottleneck
@@ -47,6 +49,7 @@ def generalized_recursive(arena):
     :return: the solution of the provided generalized parity game, that is the set of vertices won by each player
     :rtype: list of int, list of int
     """
+
     max_priorities = transform_game(arena)
 
     return disj_parity_win(arena, max_priorities)
@@ -124,11 +127,3 @@ def disj_parity_win(arena, max_priorities):
                 return W1, B
 
     return arena.vertices, []
-
-"""
-import gpg2arena
-arena = gpg2arena.gpg2arena("../arenas/gpg/example_4.gpg")
-w0, w1 = generalized_recursive(arena)
-print(w0)
-print(w1)
-"""

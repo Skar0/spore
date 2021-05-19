@@ -11,6 +11,7 @@ def count_outgoing_edges(arena, player):
     :return: a dictionary where keys are nodes and values are the number of outgoing edges of that node.
     :rtype: defaultdict of int: int
     """
+
     nbr_outgoing_edges = defaultdict(int)
 
     for vertex in arena.vertices:
