@@ -1,13 +1,13 @@
 # Synt-tool
 
 ## How to build
-Building requires a builder, such as PyPA build.
+Execute the following commands
 
     virtualenv --python=python2.7 env
     source env/bin/activate
-    pip install build
-    python setup.py bdist_wheel
-    pip install dist/*.whl
+    python setup.py build_ext --inplace
+
+Then, you can import the packages from the root of this project.
 
 ### Unit tests
 Once `synttool` is installed, the unit tests can be run as:

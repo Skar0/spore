@@ -1,7 +1,8 @@
 from collections import defaultdict
+from arena import Arena
 
 
-cdef Arena gpg2arena(str gpg_path):
+def gpg2arena(gpg_path):
     """
     Loads a generalized parity game from file and represent it as an Arena object.
     :param gpg_path: path to the .gpg file containing a generalized parity game in extended PGSolver format

@@ -1,7 +1,7 @@
 from collections import defaultdict, deque
 
 
-cdef dict count_outgoing_edges(Arena arena, int player):
+def count_outgoing_edges(arena, player):
     """
     Computes the number of outgoing edges for each vertex of player in the arena.
     :param arena: the arena
@@ -14,7 +14,7 @@ cdef dict count_outgoing_edges(Arena arena, int player):
     cdef int vertex
     cdef dict nbr_outgoing_edges
 
-    nbr_outgoing_edges = defaultdict(int)
+    nbr_outgoing_edges = <dict>defaultdict(int)
 
     for vertex in arena.vertices:
         if arena.player[vertex] == player:
@@ -23,7 +23,7 @@ cdef dict count_outgoing_edges(Arena arena, int player):
     return nbr_outgoing_edges
 
 
-cdef list attractor(Arena arena, list s, int player):
+def attractor(arena, s, player):
     """
     Computes the attractor of set s for player in the arena.
     :param arena: the arena in which we compute the attractor
@@ -36,19 +36,19 @@ cdef list attractor(Arena arena, list s, int player):
     :rtype: list of int
     """
     cdef int opponent, vertex, current_vertex, pred
-    cdef list queue     # To correctly "cast" to deque, we need to use C++ bindings
+    # cdef list queue     # To correctly "cast" to deque, we need to use C++ bindings
     cdef dict visited, nbr_outgoing_edges
     cdef list attractor
 
     opponent = 0 if player else 1  # opponent is 0 if player is 1
 
     # TODO check the collections used here (queue with append and list with append)
-    nbr_outgoing_edges = count_outgoing_edges(arena, opponent)
+    nbr_outgoing_edges = <dict>count_outgoing_edges(arena, opponent)
 
     queue = deque()  # init queue (deque is part of standard library and allows O(1) append() and pop() at either end)
 
     # dictionary used to check if a vertex has been visited without iterating over the attractor (in O(1) on average)
-    visited = defaultdict(lambda: 0)
+    visited = <dict>defaultdict(lambda: 0)
 
     attractor = []  # the attractor
 

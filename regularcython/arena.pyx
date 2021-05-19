@@ -1,6 +1,6 @@
 from collections import defaultdict
 
-cdef class Arena:
+class Arena:
     """
     Class used to represent a game arena. Internally, the arena is represented using lists and dictionaries.
     """
@@ -24,7 +24,7 @@ cdef class Arena:
         # defaultdict of int (vertex): list of int (predecessors)
         self.predecessors = None        # type: defaultdict[int, list[int]]
 
-    cdef Arena subarena(self, list removed):
+    def subarena(self, removed):
         """
         Creates a sub-arena of the current arena by only keeping vertices not present in the provided set.
         :param removed: vertices to be removed from the current arena
@@ -40,11 +40,11 @@ cdef class Arena:
         nbr_functions = self.nbr_functions
 
         vertices = []
-        player = defaultdict(lambda: -1)
+        player = <dict>defaultdict(lambda: -1)
         priorities = [defaultdict(lambda: []) for _ in range(nbr_functions)]
-        vertex_priorities = defaultdict(lambda: [])
-        successors = defaultdict(lambda: [])
-        predecessors = defaultdict(lambda: [])
+        vertex_priorities = <dict>defaultdict(lambda: [])
+        successors = <dict>defaultdict(lambda: [])
+        predecessors = <dict>defaultdict(lambda: [])
 
         for vertex in self.vertices:
             # for each remaining vertex

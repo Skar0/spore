@@ -1,7 +1,8 @@
 from collections import defaultdict
+from attractor import attractor
 
 
-cdef list transform_game(Arena arena):
+def transform_game(arena):
     """
     Complement the priorities in the provided arena. That is, add 1 to each priority. Also record the maximal priority
     occurring in the arena and make sure that it is odd (adding +1 to actual maximum if it is not the case).
@@ -20,7 +21,7 @@ cdef list transform_game(Arena arena):
     for function_index in range(arena.nbr_functions):
 
         # new dictionary to hold the new keys for the priorities
-        new_dict = defaultdict(lambda: [])
+        new_dict = <dict>defaultdict(lambda: [])
 
         for priority, vertices in arena.priorities[function_index].items():
 
@@ -43,7 +44,7 @@ cdef list transform_game(Arena arena):
     return max_priorities
 
 
-cdef list generalized_recursive(Arena arena):
+def generalized_recursive(arena):
     """
     Solve the generalized parity game provided in arena using the recursive algorithm.
     :param arena: a game arena
@@ -58,7 +59,7 @@ cdef list generalized_recursive(Arena arena):
     return disj_parity_win(arena, max_priorities)
 
 
-cdef tuple disj_parity_win(Arena arena, list max_priorities):
+def disj_parity_win(arena, max_priorities):
     """
     Procedure to solve the generalized parity game provided in arena using the recursive algorithm.
     :param arena: a game arena
@@ -70,7 +71,7 @@ cdef tuple disj_parity_win(Arena arena, list max_priorities):
     """
     cdef int value, func_index
     cdef list attMaxOdd, attMaxEven, copy_max_priorities
-    cdef Arena G1, H1
+    # cdef Arena G1, H1
 
     # For the correctness argument to work, and for the base case too,
     # we need the max value of each priority to be odd!

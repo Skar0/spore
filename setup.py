@@ -1,3 +1,12 @@
-from cysetuptools import setup
+from setuptools import setup
+from Cython.Build import cythonize
 
-setup()
+setup(
+    ext_modules = cythonize([
+            "regularcython/arena.pyx",
+            "regularcython/attractor.pyx",
+            "regularcython/generalizedRecursive.pyx",
+            "regularcython/gpg2arena.pyx",
+        ]
+    )
+)
