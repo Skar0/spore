@@ -1,6 +1,6 @@
 from collections import defaultdict
-import arena as ar
-import misc
+import bdd.arena as ar
+import bdd.misc
 
 
 def pg2bdd(pg_path, manager):
@@ -167,7 +167,7 @@ def pg2bdd_direct_encoding(pg_path, manager):
             infos = line.rstrip().split(" ")  # strip line to get info
             index = int(infos[0])
 
-            # TODO we use the encoding from int to bdd node in order to get a vertex and add it to the BDD
+            # TODO we use the encoding from int to test node in order to get a vertex and add it to the BDD
             # TODO remembering created BDD nodes in a list like previously could be more efficient
             # TODO does re-declaring the BDD node for a vertex using manager.cube work ? Or does it need to be the
             #  previously declared node ?
