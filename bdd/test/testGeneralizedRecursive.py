@@ -1,9 +1,9 @@
 import unittest
 import dd.cudd as bdd
 
-from synttool.bdd.generalizedRecursive import generalized_recursive
-from synttool.bdd.gpg2bdd import gpg2bdd
-from synttool.bdd.misc import bdd2int
+from bdd.generalizedRecursive import generalized_recursive
+from bdd.gpg2bdd import gpg2bdd
+from bdd.misc import bdd2int
 
 
 class testGeneralizedRecursive(unittest.TestCase):
@@ -12,7 +12,7 @@ class testGeneralizedRecursive(unittest.TestCase):
     """
 
     def setUp(self):
-        self.arena_path = "../../"
+        self.arena_path = "./"
 
     def test_recursive_generalized_solved_examples(self):
         """
