@@ -1,7 +1,7 @@
 from collections import defaultdict, deque
 
 
-cdef dict count_outgoing_edges(Arena arena, int player):
+def count_outgoing_edges(arena, player):
     """
     Computes the number of outgoing edges for each vertex of player in the arena.
     :param arena: the arena
@@ -11,9 +11,6 @@ cdef dict count_outgoing_edges(Arena arena, int player):
     :return: a dictionary where keys are nodes and values are the number of outgoing edges of that node.
     :rtype: defaultdict of int: int
     """
-    cdef int vertex
-    cdef dict nbr_outgoing_edges
-
     nbr_outgoing_edges = defaultdict(int)
 
     for vertex in arena.vertices:
@@ -23,7 +20,7 @@ cdef dict count_outgoing_edges(Arena arena, int player):
     return nbr_outgoing_edges
 
 
-cdef list attractor(Arena arena, list s, int player):
+def attractor(arena, s, player):
     """
     Computes the attractor of set s for player in the arena.
     :param arena: the arena in which we compute the attractor
@@ -35,10 +32,6 @@ cdef list attractor(Arena arena, list s, int player):
     :return: the computed attractor
     :rtype: list of int
     """
-    cdef int opponent, vertex, current_vertex, pred
-    cdef list queue     # To correctly "cast" to deque, we need to use C++ bindings
-    cdef dict visited, nbr_outgoing_edges
-    cdef list attractor
 
     opponent = 0 if player else 1  # opponent is 0 if player is 1
 
@@ -61,7 +54,7 @@ cdef list attractor(Arena arena, list s, int player):
     # while queue is not empty
     while queue:
 
-        current_vertex = queue.pop_left()  # remove and return vertex on the left side of the queue (first in, first out)
+        current_vertex = queue.popleft()  # remove and return vertex on the left side of the queue (first in, first out)
 
         # iterating over the predecessors of current_vertex
         for pred in arena.predecessors[current_vertex]:
