@@ -1,7 +1,7 @@
 import unittest
 from collections import defaultdict
 
-from synttool.regular.gpg2arena import gpg2arena
+from regular.gpg2arena import gpg2arena
 
 
 def retrieve_expected_pg_arena(path):
@@ -83,12 +83,12 @@ class TestArena(unittest.TestCase):
     """
 
     def setUp(self):
-        self.pg_test_files_path = "../../arenas/pg/"
+        self.pg_test_files_path = "./arenas/pg/"
         self.pg_test_files = ["example_1.pg", "example_2.pg", "example_3.pg", "example_4.pg",
                               "example_5.pg"]
         self.pg_expected_values = [] * len(self.pg_test_files)
 
-        self.gpg_test_files_path = "../../arenas/gpg/"
+        self.gpg_test_files_path = "./arenas/gpg/"
         self.gpg_test_files = ["example_1.gpg", "example_2.gpg", "example_3.gpg", "example_4.gpg", "example_1_pg.gpg",
                                "example_2_pg.gpg", "example_3_pg.gpg", "example_4_pg.gpg", "example_5_pg.gpg"]
         self.gpg_expected_values = [] * len(self.gpg_test_files)

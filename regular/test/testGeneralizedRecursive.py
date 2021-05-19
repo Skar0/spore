@@ -1,8 +1,7 @@
 import unittest
 
-
-from synttool.regular.generalizedRecursive import generalized_recursive
-from synttool.regular.gpg2arena import gpg2arena
+from regular.generalizedRecursive import generalized_recursive
+from regular.gpg2arena import gpg2arena
 
 
 class testGeneralizedRecursive(unittest.TestCase):
@@ -11,7 +10,7 @@ class testGeneralizedRecursive(unittest.TestCase):
     """
 
     def setUp(self):
-        self.arena_path = "../../"
+        self.arena_path = "./"
 
     def test_recursive_generalized_solved_examples(self):
         """
