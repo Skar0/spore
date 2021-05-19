@@ -12,5 +12,6 @@ Building requires a builder, such as PyPA build.
 ### Unit tests
 Once `synttool` is installed, the unit tests can be run as:
 
-    cd tests/regular
-    python -m unittest discovery
+    python -m unittest discover .
+
+from the root directory of the project
