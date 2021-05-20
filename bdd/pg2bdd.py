@@ -148,7 +148,7 @@ def pg2bdd_direct_encoding(pg_path, manager):
             player = int(infos[2])
 
             # dictionary encoding the valuation corresponding to the vertex
-            vertex_dict = misc.int2dict(index, vars)
+            vertex_dict = bdd.misc.int2dict(index, vars)
             vertex_bdd = manager.cube(vertex_dict)  # create a BDD node for this valuation
 
             # add vertex to the formula for correct priority
@@ -174,8 +174,8 @@ def pg2bdd_direct_encoding(pg_path, manager):
 
             for succ in infos[3].split(","):
                 successor = int(succ)
-                index_bdd = manager.cube(misc.int2dict(index, vars))
-                succ_bdd = manager.let(mapping_bis, manager.cube(misc.int2dict(successor, vars)))
+                index_bdd = manager.cube(bdd.misc.int2dict(index, vars))
+                succ_bdd = manager.let(mapping_bis, manager.cube(bdd.misc.int2dict(successor, vars)))
 
                 edges = edges | (index_bdd & succ_bdd)
 
