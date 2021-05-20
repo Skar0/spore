@@ -1,88 +1,93 @@
 from regular.attractor import attractor
 
 
-def strong_parity_solver_no_strategies(arena):
+def recursive(arena):
     """
-    Strong parity games solver. This is an implementation of the recursive algorithm used to solve parity games.
-    This implementation does not compute the winning strategies (for comparison purpose with other algorithms
-    which don't)
-    :param g: the game to solve.
-    :return: the solution in the following format : (W_0, W_1).
+    Solve the parity game provided in arena using the recursive algorithm.
+    :param arena: a game arena
+    :type arena: Arena
+    :return: the solution of the provided parity game, that is the set of vertices won by each player
+    :rtype: list of int, list of int
     """
-    W1 = []  # Winning region of player 0
-    W2 = []  # Winning region of player 1
+
+    winning_region_player0 = []  # winning region of player 0
+    winning_region_player1 = []  # winning region of player 1
 
     # if the game is empty, return the empty regions
     if arena.nbr_vertices == 0:
-        return W1, W2
+        return winning_region_player0, winning_region_player1
 
     else:
-        i = max(arena.priorities[0].keys())  # get max priority occurring in g
-        print(i)
+        max_occurring_priority = max(arena.priorities[0].keys())  # get max priority occurring in g
 
-        # determining which player we are considering, if i is even : player 0 and else player 1
-        j = 1 if i % 2 else 0
+        # determining which player we are considering, if max_occurring_priority is odd : player 1 and else player 0
+        j = 1 if max_occurring_priority % 2 else 0
 
         opponent = 0 if j else 1  # getting the opponent of the player
 
-        U = arena.priorities[0][i]
+        # vertices with priority max_occurring_priority
+        U = arena.priorities[0][max_occurring_priority]
 
-        # getting the attractor A and discarding the region for the opponent
+        # getting the attractor A
         A = attractor(arena, U, j)
 
-        # The subgame G\A is composed of the nodes not in the attractor, thus the nodes of the opposite player's region
+        # The subgame G\A is composed of the vertices not in the attractor
         G_A = arena.subarena(A)
 
-        # Recursively solving the subgame G\A, solution comes as (W_0, W_1)
-        sol_player1, sol_player2 = strong_parity_solver_no_strategies(G_A)
+        # Recursively solving the subgame G\A
+        winning_region_player0_G_A, winning_region_player1_G_A = recursive(G_A)
 
         # depending on which player we are considering, assign regions to the proper variables
-        # W'_j is noted W_j, sigma'_j is noted sig_j; the same aplies for jbar
-        if j == 0:
-            W_j = sol_player1
-            W_jbar = sol_player2
+        # if we consider player1
+        if j:
+            winning_region_player = winning_region_player1_G_A
+            winning_region_opponent = winning_region_player0_G_A
         else:
-            W_j = sol_player2
-            W_jbar = sol_player1
+            winning_region_player = winning_region_player0_G_A
+            winning_region_opponent = winning_region_player1_G_A
 
-        # if W'_jbar is empty we update the regions depending on the current player
+        # if winning_region_opponent is empty we update the regions depending on the current player
         # the region for the whole game for one of the players is empty
-        if not W_jbar:
-            if j == 0:
-                W1.extend(A)
-                W1.extend(W_j)
+        if not winning_region_opponent:
+
+            # if we consider player1
+            if j:
+                winning_region_player1.extend(A)
+                winning_region_player1.extend(winning_region_player)
             else:
-                W2.extend(A)
-                W2.extend(W_j)
+                winning_region_player0.extend(A)
+                winning_region_player0.extend(winning_region_player)
+
         else:
             # compute attractor B
-            B = attractor(arena, W_jbar, opponent)
-            # The subgame G\B is composed of the nodes not in the attractor, so of the opposite player's winning region
+            B = attractor(arena, winning_region_opponent, opponent)
+
+            # The subgame G\B is composed of the vertices not in the attractor
             G_B = arena.subarena(B)
 
-            # recursively solve subgame G\B, solution comes as (W_0, W_1)
-            sol_player1_, sol_player2_ = strong_parity_solver_no_strategies(G_B)
+            # recursively solve subgame G\B
+            winning_region_player0_G_B, winning_region_player0_G_B = recursive(G_B)
 
             # depending on which player we are considering, assign regions to the proper variables
-            # W''_j is noted W__j, sigma''_j is noted sig__j; the same aplies for jbar
-            if j == 0:
-                W__j = sol_player1_
-                W__jbar = sol_player2_
+            # if we consider player1
+            if j:
+                winning_region_player_bis = winning_region_player0_G_B
+                winning_region_opponent_bis = winning_region_player0_G_B
             else:
-                W__j = sol_player2_
-                W__jbar = sol_player1_
+                winning_region_player_bis = winning_region_player0_G_B
+                winning_region_opponent_bis = winning_region_player0_G_B
 
             # the last step is to update the winning regions depending on which player we consider
-            if j == 0:
-                W1 = W__j
+            # if we consider player1
+            if j:
+                winning_region_player1 = winning_region_player_bis
 
-                W2.extend(W__jbar)
-                W2.extend(B)
-
+                winning_region_player0.extend(winning_region_opponent_bis)
+                winning_region_player0.extend(B)
             else:
-                W2 = W__j
+                winning_region_player0 = winning_region_player_bis
 
-                W1.extend(W__jbar)
-                W1.extend(B)
+                winning_region_player1.extend(winning_region_opponent_bis)
+                winning_region_player1.extend(B)
 
-    return W1, W2
+    return winning_region_player0, winning_region_player1
