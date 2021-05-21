@@ -17,7 +17,7 @@ class Arena:
         # defaultdict of int (vertex): int (player for that vertex)
         self.player = None  # type: defaultdict[int, int]
         # list of defaultdict of int (priority): list of int (vertices of that priority)
-        self.priorities = None  # type: defaultdict[int, list[int]]
+        self.priorities = None  # type: list[defaultdict[int, list[int]]]
         # defaultdict of int (vertex): list of int (priorities for that vertex)
         self.vertex_priorities = None  # type: defaultdict[int, list[int]]
         # defaultdict of int (vertex): list of int (successors)
