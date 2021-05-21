@@ -144,7 +144,7 @@ def recursive_with_buchi(arena, manager):
         G_A = remaining_arena.subarena(~A) # TODO being consistent between bdd and non bdd for subarena
 
         # Recursively solving the subgame G\A
-        winning_region_player0_G_A, winning_region_player1_G_A = recursive(G_A, manager)
+        winning_region_player0_G_A, winning_region_player1_G_A = recursive_with_buchi(G_A, manager)
 
         # depending on which player we are considering, assign regions to the proper variables
         # if we consider player1
@@ -175,7 +175,7 @@ def recursive_with_buchi(arena, manager):
             G_B = remaining_arena.subarena(~B)
 
             # recursively solve subgame G\B
-            winning_region_player0_G_B, winning_region_player1_G_B = recursive(G_B, manager)
+            winning_region_player0_G_B, winning_region_player1_G_B = recursive_with_buchi(G_B, manager)
 
             # depending on which player we are considering, assign regions to the proper variables
             # if we consider player1
