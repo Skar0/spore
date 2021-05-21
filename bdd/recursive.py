@@ -36,7 +36,7 @@ def recursive(arena, manager):
         A = attractor(arena, U, j, manager)
 
         # The subgame G\A is composed of the vertices not in the attractor
-        G_A = arena.subarena(~A) # TODO being consistent between bdd and non bdd for subarena
+        G_A = arena.subarena(~A, manager) # TODO being consistent between bdd and non bdd for subarena
 
         # Recursively solving the subgame G\A
         winning_region_player0_G_A, winning_region_player1_G_A = recursive(G_A, manager)
@@ -52,7 +52,7 @@ def recursive(arena, manager):
 
         # if winning_region_opponent is empty we update the regions depending on the current player
         # the region for the whole game for one of the players is empty
-        if not winning_region_opponent:
+        if winning_region_opponent == manager.false:
 
             # if we consider player1
             if j:
@@ -67,7 +67,7 @@ def recursive(arena, manager):
             B = attractor(arena, winning_region_opponent, opponent, manager)
 
             # The subgame G\B is composed of the vertices not in the attractor
-            G_B = arena.subarena(~B)
+            G_B = arena.subarena(~B, manager)
 
             # recursively solve subgame G\B
             winning_region_player0_G_B, winning_region_player1_G_B = recursive(G_B, manager)
