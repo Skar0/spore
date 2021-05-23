@@ -107,6 +107,10 @@ def recursive_with_buchi(arena):
     winning_region_player0 = []  # winning region of player 0
     winning_region_player1 = []  # winning region of player 1
 
+    # if the game is empty, return the empty regions
+    if arena.nbr_vertices == 0:
+        return winning_region_player0, winning_region_player1
+
     remaining_arena, partial_winning_region_player0, partial_winning_region_player1 = buchi_partial_solver(arena, [],
                                                                                                            [])
 
@@ -114,7 +118,7 @@ def recursive_with_buchi(arena):
     winning_region_player0.extend(partial_winning_region_player0)
     winning_region_player1.extend(partial_winning_region_player1)
 
-    # if the game is empty, return the empty regions
+    # if the remaining game is empty, return the empty regions
     if remaining_arena.nbr_vertices == 0:
         return winning_region_player0, winning_region_player1
 
@@ -181,12 +185,12 @@ def recursive_with_buchi(arena):
             # the last step is to update the winning regions depending on which player we consider
             # if we consider player1
             if j:
-                winning_region_player1 = winning_region_player_bis
+                winning_region_player1.extend(winning_region_player_bis)
 
                 winning_region_player0.extend(winning_region_opponent_bis)
                 winning_region_player0.extend(B)
             else:
-                winning_region_player0 = winning_region_player_bis
+                winning_region_player0.extend(winning_region_player_bis)
 
                 winning_region_player1.extend(winning_region_opponent_bis)
                 winning_region_player1.extend(B)
