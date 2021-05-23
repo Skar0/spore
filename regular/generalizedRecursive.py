@@ -149,7 +149,7 @@ def generalized_recursive_with_buchi(arena):
     max_priorities = transform_game(remaining_arena)
 
     # TODO fix add partial solver in recursive calls
-    winning_region_player0, winning_region_player1 = disj_parity_win(arena, max_priorities)
+    winning_region_player0, winning_region_player1 = disj_parity_win(remaining_arena, max_priorities)
 
     winning_region_player0.extend(partial_winning_region_player0)
     winning_region_player1.extend(partial_winning_region_player1)
