@@ -52,7 +52,7 @@ def buchi_partial_solver(arena, partial_winning_region_player0, partial_winning_
                 else:
                     partial_winning_region_player0.extend(regular_att)
 
-                return buchi_partial_solver(arena.subgame(regular_att),
+                return buchi_partial_solver(arena.subarena(regular_att),
                                             partial_winning_region_player0,
                                             partial_winning_region_player1)
 
