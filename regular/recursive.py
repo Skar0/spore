@@ -22,7 +22,7 @@ def recursive(arena):
         max_occurring_priority = max(arena.priorities[0].keys())  # get max priority occurring in g
 
         # determining which player we are considering, if max_occurring_priority is odd : player 1 and else player 0
-        j = 1 if max_occurring_priority % 2 else 0
+        j = max_occurring_priority % 2
 
         opponent = 0 if j else 1  # getting the opponent of the player
 
@@ -111,22 +111,19 @@ def recursive_with_buchi(arena):
     if arena.nbr_vertices == 0:
         return winning_region_player0, winning_region_player1
 
-    remaining_arena, partial_winning_region_player0, partial_winning_region_player1 = buchi_partial_solver(arena, [],
+    remaining_arena, partial_winning_region_player0, partial_winning_region_player1 = buchi_partial_solver(arena,
+                                                                                                           [],
                                                                                                            [])
 
-    # add the partial solutions to the winning regions
-    winning_region_player0.extend(partial_winning_region_player0)
-    winning_region_player1.extend(partial_winning_region_player1)
-
-    # if the remaining game is empty, return the empty regions
+    # if the remaining game is empty, return the partial regions
     if remaining_arena.nbr_vertices == 0:
-        return winning_region_player0, winning_region_player1
+        return partial_winning_region_player0, partial_winning_region_player1
 
     else:
         max_occurring_priority = max(remaining_arena.priorities[0].keys())  # get max priority occurring in g
 
         # determining which player we are considering, if max_occurring_priority is odd : player 1 and else player 0
-        j = 1 if max_occurring_priority % 2 else 0
+        j = max_occurring_priority % 2
 
         opponent = 0 if j else 1  # getting the opponent of the player
 
@@ -185,14 +182,18 @@ def recursive_with_buchi(arena):
             # the last step is to update the winning regions depending on which player we consider
             # if we consider player1
             if j:
-                winning_region_player1.extend(winning_region_player_bis)
+                winning_region_player1 = winning_region_player_bis
 
                 winning_region_player0.extend(winning_region_opponent_bis)
                 winning_region_player0.extend(B)
             else:
-                winning_region_player0.extend(winning_region_player_bis)
+                winning_region_player0 = winning_region_player_bis
 
                 winning_region_player1.extend(winning_region_opponent_bis)
                 winning_region_player1.extend(B)
+
+    # add the partial solutions to the winning regions
+    winning_region_player0.extend(partial_winning_region_player0)
+    winning_region_player1.extend(partial_winning_region_player1)
 
     return winning_region_player0, winning_region_player1
