@@ -38,6 +38,7 @@ def gpg2arena(gpg_path):
             vertex_player = int(infos[2])
 
             vertices.append(index)
+
             player[index] = vertex_player
 
             for func in range(nbr_functions):
@@ -130,8 +131,8 @@ def gpg2arena_cycle_detector(gpg_path):
                     if any(p % 2 for p in prios):
                         player1_won_vertices.append(index)
 
-        print(player0_won_vertices)
-        print(player1_won_vertices)
+        print("Player 0 won vertices " + str(player0_won_vertices))
+        print("Player 1 won vertices " + str(player1_won_vertices))
 
         arena = Arena()
 
