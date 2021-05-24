@@ -1,6 +1,8 @@
 from bdd.attractor import attractor_cudd
 from collections import defaultdict
 
+from bdd.generalizedBuchiSolver import buchi_solver_gen
+
 
 def complement_priorities(arena, manager):
     """
@@ -123,35 +125,27 @@ def disj_par_win(arena, max_priorities, manager):
     return arena.player0_vertices | arena.player1_vertices, manager.false
 
 
-def generalized_recursive_with_psolver(arena, psolver, manager):
+def generalized_recursive_with_psolver(arena, manager):
     """
     Solve the generalized parity game provided in arena using a combination of a provided partial solver and the
     recursive algorithm.
     :param arena: a game arena
     :type arena: Arena
-    :param psolver: a partial solver
-    :type psolver: function
     :param manager: the BDD manager
     :type manager: dd.cudd.BDD
     :return: the solution of the provided generalized parity game, that is the set of vertices won by each player
     :rtype: (dd.cudd.Function, dd.cudd.Function)
     """
 
-    psolver_solved = False
+    partial_winning_region_player0, partial_winning_region_player1 = buchi_solver_gen(arena, manager)
 
-    (z0, z1) = psolver(arena, manager)
+    remaining_unsolved = arena.subarena(~(partial_winning_region_player0 | partial_winning_region_player1), manager)
 
-    g_bar = arena.subarena(~(z0 | z1), manager)
+    if (remaining_unsolved.player0_vertices | remaining_unsolved.player1_vertices) == manager.false:
+        return partial_winning_region_player0, partial_winning_region_player1
 
-    # TODO why does this function return 3 things ?
+    max_priorities = complement_priorities(remaining_unsolved, manager)
 
-    if (g_bar.phi_0 | g_bar.phi_1) == manager.false:
-        psolver_solved = True
+    winning_region_player0, winning_region_player1 = disj_par_win(remaining_unsolved, max_priorities, manager)
 
-        return z0, z1, psolver_solved
-
-    max_priorities = complement_priorities(g_bar, manager)
-
-    (w0, w1) = disj_par_win(g_bar, max_priorities, manager)
-
-    return w0 | z0, w1 | z1, psolver_solved
+    return winning_region_player0 | partial_winning_region_player0, winning_region_player1 | partial_winning_region_player1
