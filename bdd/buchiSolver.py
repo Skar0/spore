@@ -13,6 +13,49 @@ def sort_priorities_ascending(arena):
     priorities_occurring = arena.priorities[0]
     return sorted(priorities_occurring.keys())
 
+# Return the expression which is evaluate to True for vertices with priority less or equal than max_color
+def inf_prio_expr(bdd, max_prio, g):
+    expr_res = bdd.false
+    for curr_prio in range(0, max_prio + 1):
+        expr_res = expr_res | g.priorities[0][curr_prio]
+    return expr_res
+
+def monotone_attractor_cha(bdd, g, i, f, d):
+    inf_col_expr = inf_prio_expr(bdd, d, g)
+
+    f_1 = g.edges & bdd.let(g.mapping_bis, f)
+    f_1 = bdd.exist(g.vars_bis, f_1) & inf_col_expr
+
+    f_2 = g.edges & bdd.let(g.mapping_bis, ~f)
+    f_2 = ~ bdd.exist(g.vars_bis, f_2) & inf_col_expr
+
+    if i == 0:
+        f_1 = g.player0_vertices & f_1
+        f_2 = g.player1_vertices & f_2
+    else:
+        f_1 = g.player1_vertices & f_1
+        f_2 = g.player0_vertices & f_2
+
+    attr_old = f_1 | f_2
+    while True:
+        f_1 = g.edges & bdd.let(g.mapping_bis, attr_old)
+        f_1 = bdd.exist(g.vars_bis, f_1) & inf_col_expr
+
+        f_2 = g.edges & bdd.let(g.mapping_bis, ~ (attr_old | f))
+        f_2 = ~ bdd.exist(g.vars_bis, f_2) & inf_col_expr
+
+        if i == 0:
+            f_1 = g.player0_vertices & f_1
+            f_2 = g.player1_vertices & f_2
+        else:
+            f_1 = g.player1_vertices & f_1
+            f_2 = g.player0_vertices & f_2
+
+        attr_new = attr_old | f_1 | f_2
+        if attr_new == attr_old:
+            break
+        attr_old = attr_new
+    return attr_old
 
 def buchi_partial_solver(arena, partial_winning_region_player0, partial_winning_region_player1, manager):
     """
@@ -34,17 +77,21 @@ def buchi_partial_solver(arena, partial_winning_region_player0, partial_winning_
 
     for priority in sort_priorities_ascending(arena):
 
-        target_set = arena.priorities[0][priority]  # set of vertices of priority
+        target_set = arena.priorities[0][priority] & (arena.player0_vertices | arena.player1_vertices)# set of vertices of priority
 
         cache = manager.false
 
         while cache != target_set and target_set != empty_set:
 
             cache = target_set
-
+            pp = priority % 2
+            # TODO my impl monotone attractor
+            #monotone_att = monotone_attractor_cha(manager, arena, pp, target_set, priority)
             monotone_att = monotone_attractor(arena, target_set, priority, manager)
 
-            if (~target_set | monotone_att) == manager.true: #TODO check this is implication, check apply perf, check preimage perf
+            # TODO test si la facon de def subset est correcte
+            #assert ((monotone_att | target_set) == monotone_att) == ((~target_set | monotone_att) == manager.true)
+            if (monotone_att | target_set) == monotone_att: #if (~target_set | monotone_att) == manager.true: #TODO check this is implication, check apply perf, check preimage perf  (monotone_att | target_set) == monotone_att:
 
                 regular_att = attractor(arena, monotone_att, priority % 2, manager)
 
@@ -54,7 +101,7 @@ def buchi_partial_solver(arena, partial_winning_region_player0, partial_winning_
                 else:
                     partial_winning_region_player0 = partial_winning_region_player0 | regular_att
 
-                return buchi_partial_solver(arena.subgame(~regular_att),
+                return buchi_partial_solver(arena.subarena(~regular_att, manager),
                                             partial_winning_region_player0,
                                             partial_winning_region_player1, manager)
 
