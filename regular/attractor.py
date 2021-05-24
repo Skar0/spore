@@ -8,11 +8,11 @@ def count_outgoing_edges(arena, player):
     :type arena: Arena
     :param player: the player whose vertices are considered
     :type player: int
-    :return: a dictionary where keys are nodes and values are the number of outgoing edges of that node.
+    :return: a dictionary where a key is a vertex and the value is the number of outgoing edges of that vertex.
     :rtype: defaultdict of int: int
     """
 
-    nbr_outgoing_edges = defaultdict(int)
+    nbr_outgoing_edges = defaultdict(int)  # default value is zero for non-existing key
 
     for vertex in arena.vertices:
         if arena.player[vertex] == player:
@@ -36,13 +36,12 @@ def attractor(arena, s, player):
 
     opponent = 0 if player else 1  # opponent is 0 if player is 1
 
-    # TODO check the collections used here (queue with append and list with append)
     nbr_outgoing_edges = count_outgoing_edges(arena, opponent)
 
     queue = deque()  # init queue (deque is part of standard library and allows O(1) append() and pop() at either end)
 
     # dictionary used to check if a vertex has been visited without iterating over the attractor (in O(1) on average)
-    visited = defaultdict(lambda: 0)
+    visited = defaultdict(int)  # default value is zero for non-existing key
 
     attractor = []  # the attractor
 
@@ -60,7 +59,7 @@ def attractor(arena, s, player):
         # iterating over the predecessors of current_vertex
         for pred in arena.predecessors[current_vertex]:
 
-            if visited[pred] == 0:  # if pred is not yet visited, its visited value is 0 by default
+            if not visited[pred]:  # if pred is not yet visited, its visited value is 0 by default
 
                 if arena.player[pred] == player:
 
@@ -85,7 +84,7 @@ def attractor(arena, s, player):
 def monotone_attractor(arena, s, priority, function):
     """
     Computes the monotone attractor of the target set, meaning the attractor without visiting bigger priorities than
-    the one of the target set.
+    the one of the target set. Notice that s does not automatically belong to this monotone attractor.
     :param arena: the arena in which we compute the attractor
     :type arena: Arena
     :param s: the set for which we compute the attractor
@@ -97,28 +96,27 @@ def monotone_attractor(arena, s, priority, function):
     :return: the computed attractor
     :rtype: list of int
     """
+
     player = priority % 2  # the player for which we compute the attractor
     opponent = 0 if player else 1  # opponent is 0 if player is 1
 
-    # TODO check the collections used here (queue with append and list with append)
     nbr_outgoing_edges = count_outgoing_edges(arena, opponent)
 
     queue = deque()  # init queue (deque is part of standard library and allows O(1) append() and pop() at either end)
 
     # dictionary used to check if a vertex has been visited without iterating over the attractor (in O(1) on average)
-    visited = defaultdict(lambda: 0)
+    visited = defaultdict(int)  # default value is zero for non-existing key
 
     attractor = []  # the attractor
 
     for vertex in s:
-        queue.append(vertex)  # add node to the end of the queue
+        queue.append(vertex)  # add vertex to the end of the queue
 
     # while queue is not empty
     while queue:
 
         current_vertex = queue.popleft()  # remove and return vertex on the left side of the queue (first in, first out)
 
-        # TODO might use a filter to retrieve interesting predecessors
         # iterating over the predecessors of current_vertex
         for pred in arena.predecessors[current_vertex]:
 
@@ -126,7 +124,7 @@ def monotone_attractor(arena, s, priority, function):
             pred_player = arena.player[pred]
             pred_priority = arena.vertex_priorities[pred][function]
 
-            if visited[pred] == 0:  # if pred is not yet visited, its visited value is 0 by default
+            if not visited[pred]:  # if pred is not yet visited, its visited value is 0 by default
 
                 # if pred belongs to the correct player and its priority is lower or equal, add it
                 if pred_player == player and pred_priority <= priority:
@@ -177,30 +175,29 @@ def safe_attractor(arena, s, avoid, player):
 
     opponent = 0 if player else 1  # opponent is 0 if player is 1
 
-    # TODO check the collections used here (queue with append and list with append)
     nbr_outgoing_edges = count_outgoing_edges(arena, opponent)
 
     queue = deque()  # init queue (deque is part of standard library and allows O(1) append() and pop() at either end)
 
     # dictionary used to check if a vertex has been visited without iterating over the attractor (in O(1) on average)
-    visited = defaultdict(lambda: 0)
+    visited = defaultdict(int)  # default value is zero for non-existing key
 
     attractor = []  # the attractor
 
     # for vertices in s and not in avoid
     for vertex in set(s) - set(avoid):
-        queue.append(vertex)  # add node to the end of the queue
+        queue.append(vertex)  # add vertex to the end of the queue
         visited[vertex] = 1  # mark as visited
         attractor.append(vertex)  # add vertex to the attractor
 
     while queue:
 
-        current_vertex = queue.popleft()  # remove and return node on the left side of the queue (first in, first out)
+        current_vertex = queue.popleft()  # remove and return vertex on the left side of the queue (first in, first out)
 
-        # iterating over the predecessors of node current_vertex which are not in avoid
+        # iterating over the predecessors of vertex current_vertex which are not in avoid
         for pred in set(arena.predecessors[current_vertex]) - set(avoid):
 
-            if visited[pred] == 0:  # if pred is not yet visited, its visited value is 0 by default
+            if not visited[pred]:  # if pred is not yet visited, its visited value is 0 by default
 
                 # get pred info
                 pred_player = arena.player[pred]
