@@ -117,14 +117,14 @@ def monotone_attractor(arena, s, priority, manager):
     player = priority % 2  # the player for which we compute the attractor
 
     old_attractor = manager.true
-    new_attractor = manager.true  # at first attractor only contains s
+    new_attractor = manager.false  # at first attractor only contains s
 
     vertices_smaller_priority = manager.false
     for prio, bdd in arena.priorities[0].items():
         if prio <= priority:
             vertices_smaller_priority = vertices_smaller_priority | bdd
 
-    # we don't want to include the old attractor in the first iteration, att normal avec retrait a la fin du target ? je crois qu'on doit considere lit avant OU le target set
+    # TODO we don't want to include the old attractor in the first iteration, att normal avec retrait a la fin du target ? je crois qu'on doit considere lit avant OU le target set
     first_iteration = True
 
     # while a fixpoint is not reached
