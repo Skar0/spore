@@ -27,7 +27,8 @@ class Arena:
 
     def subarena(self, removed):
         """
-        Creates a sub-arena of the current arena by only keeping vertices not present in the provided set.
+        Creates a sub-arena of the current arena by removing the vertices provided in the removed set (in practice, a
+        new Arena object is created and the original arena remains unchanged).
         :param removed: vertices to be removed from the current arena
         :type removed: list of int
         :return: a new arena corresponding to the sub-arena
