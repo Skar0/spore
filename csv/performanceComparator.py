@@ -3,6 +3,7 @@ import signal
 from contextlib import contextmanager
 import time
 import dd.cudd as _bdd
+import traceback
 
 import regular.pg2arena as reg_pg_loader
 import regular.recursive as reg_pg_recursive
@@ -22,15 +23,14 @@ import bddcython.generalizedRecursive as bdd_c_gpg_recursive
 import regularcython.gpg2arena as reg_c_gpg_loader
 import regularcython.generalizedRecursive as reg_c_gpg_recursive
 
-
 # path to the directory which contains all tlsf files and all generated (empty or not) files
 tlsf_and_games = "csv/tlsf-after-2min-added-gen-fater-20/"
 
 # name for the .csv file containing the comparison between the running times
-comparison_file_name = "friday.csv"
+comparison_file_name = "sunday-afternoon-all-10min-timeout.csv"
 
 # timeout value for the algorithms
-out = 5
+out = 60 * 10
 
 
 def get_non_empty_tlsf(path):
@@ -61,6 +61,10 @@ def get_non_empty_tlsf(path):
 
 # from https://www.jujens.eu/posts/en/2018/Jun/02/python-timeout-function/#:~:text=You%20can%20use%20signals%20and,alarm%20signal%20for%20the%20timeout.&text=Even%20if%20this%20solution%20works,which%20can%20be%20a%20problem.
 
+class TimeOutException(Exception):
+    def __init__(self):
+        pass
+
 
 @contextmanager
 def timeout(time):
@@ -71,8 +75,15 @@ def timeout(time):
 
     try:
         yield
-    except Exception:
+    except TimeOutException:
         pass
+    except Exception as err:
+        print("    " * 10 + " exception occured")
+        exception_type = type(err).__name__
+        print(exception_type)
+        print(err)
+        track = traceback.format_exc()
+        print(track)
     finally:
         # Unregister the signal so it won't be triggered
         # if the timeout is not reached.
@@ -80,7 +91,7 @@ def timeout(time):
 
 
 def raise_timeout(signum, frame):
-    raise Exception
+    raise TimeOutException()
 
 
 def solve_pg_regular(pg_path, timeout_value):
@@ -93,9 +104,30 @@ def solve_pg_regular(pg_path, timeout_value):
     start_time = time.time()
 
     with timeout(timeout_value):
-
         arena = reg_pg_loader.pg2arena(pg_path)
         winning_0, winning_1 = reg_pg_recursive.recursive(arena)
+        player0_won = 0 in winning_0
+
+    end_time = "%.5f" % (time.time() - start_time)
+
+    if player0_won == "TIMEOUT":
+        end_time = "TIMEOUT"
+
+    return player0_won, end_time
+
+
+def solve_pg_regular_partial(pg_path, timeout_value):
+    """
+    Load and solve the parity game whose path is provided in parameter using the regular implementation.
+    """
+
+    player0_won = "TIMEOUT"
+
+    start_time = time.time()
+
+    with timeout(timeout_value):
+        arena = reg_pg_loader.pg2arena(pg_path)
+        winning_0, winning_1 = reg_pg_recursive.recursive_with_buchi(arena)
         player0_won = 0 in winning_0
 
     end_time = "%.5f" % (time.time() - start_time)
@@ -116,11 +148,60 @@ def solve_pg_bdd(pg_path, timeout_value):
     start_time = time.time()
 
     with timeout(timeout_value):
-
         manager = _bdd.BDD()
 
         arena, all_vertices = bdd_pg_loader.pg2bdd(pg_path, manager)
         winning_0, winning_1 = bdd_pg_recursive.recursive(arena, manager)
+        vertex_0_dict_rep = next(manager.pick_iter(all_vertices[0]))
+        player0_won = manager.let(vertex_0_dict_rep, winning_0) == manager.true
+
+    end_time = "%.5f" % (time.time() - start_time)
+
+    if player0_won == "TIMEOUT":
+        end_time = "TIMEOUT"
+
+    return player0_won, end_time
+
+
+def solve_pg_bdd_partial(pg_path, timeout_value):
+    """
+    Load and solve the parity game whose path is provided in parameter using the bdd implementation.
+    """
+
+    player0_won = "TIMEOUT"
+
+    start_time = time.time()
+
+    with timeout(timeout_value):
+        manager = _bdd.BDD()
+
+        arena, all_vertices = bdd_pg_loader.pg2bdd(pg_path, manager)
+        winning_0, winning_1 = bdd_pg_recursive.ziel_with_psolver(arena, manager)
+        vertex_0_dict_rep = next(manager.pick_iter(all_vertices[0]))
+        player0_won = manager.let(vertex_0_dict_rep, winning_0) == manager.true
+
+    end_time = "%.5f" % (time.time() - start_time)
+
+    if player0_won == "TIMEOUT":
+        end_time = "TIMEOUT"
+
+    return player0_won, end_time
+
+
+def solve_pg_bdd_partial_debug(pg_path, timeout_value):
+    """
+    Load and solve the parity game whose path is provided in parameter using the bdd implementation.
+    """
+
+    player0_won = "TIMEOUT"
+
+    start_time = time.time()
+
+    with timeout(timeout_value):
+        manager = _bdd.BDD()
+
+        arena, all_vertices = bdd_pg_loader.pg2bdd(pg_path, manager)
+        winning_0, winning_1 = bdd_pg_recursive.recursive_with_buchi(arena, manager)
         vertex_0_dict_rep = next(manager.pick_iter(all_vertices[0]))
         player0_won = manager.let(vertex_0_dict_rep, winning_0) == manager.true
 
@@ -166,6 +247,28 @@ def solve_gpg_regular_c(gpg_path, timeout_value):
     with timeout(timeout_value):
         arena = reg_c_gpg_loader.gpg2arena(gpg_path)
         winning_0, winning_1 = reg_c_gpg_recursive.generalized_recursive(arena)
+        player0_won = 0 in winning_0
+
+    end_time = "%.5f" % (time.time() - start_time)
+
+    if player0_won == "TIMEOUT":
+        end_time = "TIMEOUT"
+
+    return player0_won, end_time
+
+
+def solve_gpg_regular_partial(gpg_path, timeout_value):
+    """
+    Load and solve the generalized parity game whose path is provided in parameter using the regular implementation.
+    """
+
+    player0_won = "TIMEOUT"
+
+    start_time = time.time()
+
+    with timeout(timeout_value):
+        arena = reg_gpg_loader.gpg2arena(gpg_path)
+        winning_0, winning_1 = reg_gpg_recursive.generalized_recursive_with_buchi(arena)
         player0_won = 0 in winning_0
 
     end_time = "%.5f" % (time.time() - start_time)
@@ -224,10 +327,32 @@ def solve_gpg_bdd_c(gpg_path, timeout_value):
     return player0_won, end_time
 
 
+def solve_gpg_bdd_partial(gpg_path, timeout_value):
+    """
+    Load and solve the generalized parity game whose path is provided in parameter using the regular implementation.
+    """
+
+    player0_won = "TIMEOUT"
+
+    start_time = time.time()
+
+    with timeout(timeout_value):
+        manager = _bdd.BDD()
+        arena, all_vertices = bdd_gpg_loader.gpg2bdd(gpg_path, manager)
+        winning_0, winning_1 = bdd_gpg_recursive.generalized_recursive_with_psolver(arena, manager)
+        vertex_0_dict_rep = next(manager.pick_iter(all_vertices[0]))
+        player0_won = manager.let(vertex_0_dict_rep, winning_0) == manager.true
+
+    end_time = "%.5f" % (time.time() - start_time)
+
+    if player0_won == "TIMEOUT":
+        end_time = "TIMEOUT"
+
+    return player0_won, end_time
+
+
 def get_game_size(path):
-
     with open(path, "r") as game_file:
-
         # first line has max index for vertices and number of priority functions; vertices and function index start at 0
         info_line = game_file.readline().rstrip().split(" ")
 
@@ -241,25 +366,30 @@ def get_game_size(path):
 
 
 def compare_all_files(input_path, output_path, timeout):
-
     with open(output_path, "a") as f:
 
         f.write("FILE, "
                 "PG SIZE, "
                 "REG TIME, "
+                "REG PA TIME, "
                 "BDD TIME, "
+                "BDD PA CHA TIME, "
+                "BDD PA CLEM TIME, "
                 "GPG SIZE, "
                 "GPG FUNC, "
                 "REG TIME, "
-                "REG C TIME, "
+                "REG PA TIME, "
                 "BDD TIME, "
-                "BDD C TIME, "
+                "BDD PA TIME, "
                 "REAL REG PG, "
+                "REAL REG PA PG, "
                 "REAL BDD PG, "
+                "REAL BDD PA CHA PG, "
+                "REAL BDD PA CLEM PG, "
                 "REAL REG GPG, "
-                "REAL REG C GPG, "
+                "REAL REG PA GPG, "
                 "REAL BDD GPG, "
-                "REAL BDD C GPG, "
+                "REAL BDD PA GPG, "
                 "\n")
 
         at_least_one_non_empty = sorted(get_non_empty_tlsf(input_path))
@@ -270,7 +400,7 @@ def compare_all_files(input_path, output_path, timeout):
 
         for file_name in at_least_one_non_empty:
 
-            print(" "* 10 + file_name + " "+str(int(100*(float(current_done) / float(nbr_files)))) + " % done")
+            print("    " * 10 + file_name + " " + str(int(100 * (float(current_done) / float(nbr_files)))) + " % done")
             current_done += 1
 
             file_path = input_path + file_name
@@ -300,8 +430,26 @@ def compare_all_files(input_path, output_path, timeout):
                 result_string += str(time_reg)
                 result_string += ", "
 
+                print("    regular partial")
+                won_player_0_reg, time_reg = solve_pg_regular_partial(pg_file_path, timeout)
+                realizability.append(won_player_0_reg)
+                result_string += str(time_reg)
+                result_string += ", "
+
                 print("    bdd")
                 won_player_0_reg, time_reg = solve_pg_bdd(pg_file_path, timeout)
+                realizability.append(won_player_0_reg)
+                result_string += str(time_reg)
+                result_string += ", "
+
+                print("    bdd partial charly")
+                won_player_0_reg, time_reg = solve_pg_bdd_partial(pg_file_path, timeout)
+                realizability.append(won_player_0_reg)
+                result_string += str(time_reg)
+                result_string += ", "
+
+                print("    bdd partial clem")
+                won_player_0_reg, time_reg = solve_pg_bdd_partial_debug(pg_file_path, timeout)
                 realizability.append(won_player_0_reg)
                 result_string += str(time_reg)
                 result_string += ", "
@@ -309,9 +457,23 @@ def compare_all_files(input_path, output_path, timeout):
             else:
                 result_string += pg_size
                 result_string += ", "
+                realizability.append("NOT GEN")
 
                 result_string += pg_size
                 result_string += ", "
+                realizability.append("NOT GEN")
+
+                result_string += pg_size
+                result_string += ", "
+                realizability.append("NOT GEN")
+
+                result_string += pg_size
+                result_string += ", "
+                realizability.append("NOT GEN")
+
+                result_string += pg_size
+                result_string += ", "
+                realizability.append("NOT GEN")
 
             # generalized parity game analysis
             print("generalized")
@@ -336,11 +498,19 @@ def compare_all_files(input_path, output_path, timeout):
                 result_string += str(time_reg)
                 result_string += ", "
 
+                print("    regular partial")
+                won_player_0_reg, time_reg = solve_gpg_regular_partial(gpg_file_path, timeout)
+                realizability.append(won_player_0_reg)
+                result_string += str(time_reg)
+                result_string += ", "
+
+                """
                 print("    regular c")
                 won_player_0_reg, time_reg = solve_gpg_regular_c(gpg_file_path, timeout)
                 realizability.append(won_player_0_reg)
                 result_string += str(time_reg)
                 result_string += ", "
+                """
 
                 print("    bdd")
                 won_player_0_reg, time_reg = solve_gpg_bdd(gpg_file_path, timeout)
@@ -348,25 +518,43 @@ def compare_all_files(input_path, output_path, timeout):
                 result_string += str(time_reg)
                 result_string += ", "
 
+                print("    bdd partial ")
+                won_player_0_reg, time_reg = solve_gpg_bdd_partial(gpg_file_path, timeout)
+                realizability.append(won_player_0_reg)
+                result_string += str(time_reg)
+                result_string += ", "
+
+                """
                 print("    bdd c")
                 won_player_0_reg, time_reg = solve_gpg_bdd_c(gpg_file_path, timeout)
                 realizability.append(won_player_0_reg)
                 result_string += str(time_reg)
                 result_string += ", "
-
+                """
             else:
                 result_string += gpg_size
                 result_string += ", "
+                realizability.append("NOT GEN")
 
+                result_string += gpg_size
+                result_string += ", "
+                realizability.append("NOT GEN")
+
+                result_string += gpg_size
+                result_string += ", "
+                realizability.append("NOT GEN")
+
+                result_string += gpg_size
+                result_string += ", "
+                realizability.append("NOT GEN")
+
+                """
                 result_string += gpg_size
                 result_string += ", "
 
                 result_string += gpg_size
                 result_string += ", "
-
-                result_string += gpg_size
-                result_string += ", "
-
+                """
             for realized in realizability:
                 result_string += str(realized)
                 result_string += ", "
