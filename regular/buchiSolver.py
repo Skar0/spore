@@ -28,7 +28,7 @@ def buchi_partial_solver(arena, partial_winning_region_player0, partial_winning_
     :rtype: Arena, list of int, list of int
     """
 
-    empty_set = set() # TODO is this needed to check emptyness ?
+    empty_set = set()
 
     for priority in sort_priorities_ascending(arena):
 
