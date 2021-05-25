@@ -323,7 +323,7 @@ def generalized_buchi_partial_solver_inverted_players(arena, partial_winning_reg
 
                         partial_winning_region_player1.extend(regular_att)
 
-                        return generalized_buchi_partial_solver(arena.subarena(regular_att),
+                        return generalized_buchi_partial_solver_inverted_players(arena.subarena(regular_att),
                                                                 partial_winning_region_player0,
                                                                 partial_winning_region_player1)
 
@@ -378,7 +378,7 @@ def generalized_buchi_partial_solver_inverted_players(arena, partial_winning_reg
             if len(win) != 0:
                 att2 = attractor(arena, win, 0)
                 partial_winning_region_player0.extend(att2)
-                return generalized_buchi_partial_solver(arena.subarena(att2),
+                return generalized_buchi_partial_solver_inverted_players(arena.subarena(att2),
                                                 partial_winning_region_player0,
                                                 partial_winning_region_player1)
 
