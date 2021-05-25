@@ -81,7 +81,7 @@ def attractor(arena, s, player):
     return attractor
 
 
-def monotone_attractor(arena, s, priority, function):
+def monotone_attractor(arena, s, priority, function, specific_player=None):
     """
     Computes the monotone attractor of the target set, meaning the attractor without visiting bigger priorities than
     the one of the target set. Notice that s does not automatically belong to this monotone attractor.
@@ -93,11 +93,18 @@ def monotone_attractor(arena, s, priority, function):
     :type priority: int
     :param function: the priority function we consider
     :type function: int
+    :param specific_player: the player for who we compute the attractor; by default this is the player associated to
+    the priority given in parameter.
+    :type specific_player: int
     :return: the computed attractor
     :rtype: list of int
     """
 
-    player = priority % 2  # the player for which we compute the attractor
+    if specific_player is not None:
+        player = specific_player  # if a specific player is specified (like when we consider complemented arenas)
+    else:
+        player = priority % 2  # the player for which we compute the attractor
+
     opponent = 0 if player else 1  # opponent is 0 if player is 1
 
     nbr_outgoing_edges = count_outgoing_edges(arena, opponent)
