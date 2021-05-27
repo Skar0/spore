@@ -14,9 +14,9 @@ def pg2arena(pg_path, is_gpg=True):
     """
 
     # open file
-    with open(pg_path, "r") as gpg_file:
+    with open(pg_path, "r") as pg_file:
 
-        info_line = gpg_file.readline().rstrip().split(" ")
+        info_line = pg_file.readline().rstrip().split(" ")
 
         if is_gpg:
             # first line has max index for vertices and number of priority functions; function and index start at 0
@@ -36,7 +36,7 @@ def pg2arena(pg_path, is_gpg=True):
         predecessors = defaultdict(lambda: [])
 
         # iterate over vertices in the file
-        for line in gpg_file:
+        for line in pg_file:
             infos = line.rstrip().split(" ")  # strip line to get info
             index = int(infos[0])
             prio = int(infos[1])
