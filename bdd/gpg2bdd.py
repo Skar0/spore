@@ -1,6 +1,7 @@
 from collections import defaultdict
 import bdd.arena as ar
 
+
 def gpg2bdd(gpg_path, manager):
     """
     Loads a generalized parity game from file and represent it as a Binary Decision Diagram (BDD).
@@ -53,7 +54,6 @@ def gpg2bdd(gpg_path, manager):
             # current BDD for the vertex
             vertex_dict = next(all_possibilities)  # dictionary encoding the valuation corresponding to the vertex
             vertex_bdd = manager.cube(vertex_dict)  # create a BDD node for this valuation
-            # TODO we need to remember the correspondence between BDD node and vertex for later
 
             # add current node to all nodes at the correct index
             all_vertices[index] = vertex_bdd
