@@ -11,17 +11,17 @@ class Arena:
         # storing all variables and mappings needed for BDD operations
         self.vars = None
         self.vars_bis = None
-        self.all_vars = None # TODO check if actually used
+        self.all_vars = None
         self.mapping_bis = None
         self.inv_mapping_bis = None
 
         # classical arena information, with the addition of the number of bits required for a binary representation
         self.nbr_vertices = 0
-        self.nbr_digits_vertices = 0
+        self.nbr_digits_vertices = 0  # number of bits required to represent the vertices indexes in binary
         self.nbr_functions = 1
 
         # classical arena information
-        self.player0_vertices = None # TODO check if a BDD for all vertices is required
+        self.player0_vertices = None
         self.player1_vertices = None
         self.edges = None
         self.priorities = None  # priorities[i] yields the ith priority function in a generalized parity game arena
@@ -42,7 +42,6 @@ class Arena:
         player1_vertices_subarena = self.player1_vertices & vertices
         priorities_subarena = [defaultdict(lambda: manager.false) for _ in range(self.nbr_functions)]
 
-        # TODO check for optimization
         for function_index in range(self.nbr_functions):
             for priority, bdd in self.priorities[function_index].items():
                 new_priority_bdd = bdd & (player1_vertices_subarena | player0_vertices_subarena)
@@ -56,7 +55,7 @@ class Arena:
         subarena.mapping_bis = self.mapping_bis
         subarena.inv_mapping_bis = self.inv_mapping_bis
 
-        # TODO check if retaining the number of vertices in sub-games is required
+        # number of vertices is not updated in sub-games as it is never used
         # subarena.nbr_vertices = ?
 
         subarena.nbr_digits_vertices = self.nbr_digits_vertices
