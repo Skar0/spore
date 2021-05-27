@@ -32,7 +32,6 @@ def attractor(arena, s, player, manager):
         vertices_one_succ = manager.exist(arena.vars_bis, bdd_vertices_one_succ)
 
         # BDD representing vertices with at least one successor outside the previous attractor
-        # TODO are the vertices in the negation that don't exist ignored since they dont belong to arena.edges ?
         bdd_vertices_all_succ = arena.edges & ~old_attractor_prime
 
         # vertices for which there does not exist a successor outside the previous attractor
@@ -81,12 +80,12 @@ def attractor_cudd(arena, s, player, manager):
         vertices_one_succ = bdd_func.and_exists(arena.edges, old_attractor_prime, arena.vars_bis)
 
         # BDD representing vertices with at least one successor outside the previous attractor
-        # TODO are the vertices in the negation that don't exist ignored since they dont belong to arena.edges ?
-        # TODO is complementing the replaced attractor with prime vars same as replacing variables in complement of att?
         vertices_all_succ = ~bdd_func.and_exists(arena.edges, ~old_attractor_prime, arena.vars_bis)
 
         # if we compute the attractor for player 0
         if not player:
+            # vertices in vertices_all_succ, which is a negation, that don't exist are ignored since they dont belong to
+            # arena.player0_vertices
             player0_vertices_attractor = arena.player0_vertices & vertices_one_succ
             player1_vertices_attractor = arena.player1_vertices & vertices_all_succ
         else:
@@ -124,9 +123,6 @@ def monotone_attractor(arena, s, priority, manager):
         if prio <= priority:
             vertices_smaller_priority = vertices_smaller_priority | bdd
 
-    # TODO we don't want to include the old attractor in the first iteration, att normal avec retrait a la fin du target ? je crois qu'on doit considere lit avant OU le target set
-    first_iteration = True
-
     # while a fixpoint is not reached
     while old_attractor != new_attractor:
 
@@ -139,8 +135,6 @@ def monotone_attractor(arena, s, priority, manager):
         vertices_one_succ = bdd_func.and_exists(arena.edges, old_attractor_prime, arena.vars_bis)
 
         # BDD representing vertices with at least one successor outside the previous attractor
-        # TODO are the vertices in the negation that don't exist ignored since they dont belong to arena.edges ?
-        # TODO is complementing the replaced attractor with prime vars same as replacing variables in complement of att?
         vertices_all_succ = ~bdd_func.and_exists(arena.edges, ~old_attractor_prime, arena.vars_bis)
 
         # if we compute the attractor for player 0
@@ -151,6 +145,8 @@ def monotone_attractor(arena, s, priority, manager):
             player0_vertices_attractor = arena.player0_vertices & vertices_all_succ
             player1_vertices_attractor = arena.player1_vertices & vertices_one_succ
 
-        new_attractor = (old_attractor | player0_vertices_attractor | player1_vertices_attractor) & vertices_smaller_priority # check if this is where we should impose smaller priorities
-        # either that or we create a set with only the edges that are from a vertex with correct priority
+        # we impose that the computed predecessors have smaller or equal priority
+        new_attractor = (old_attractor | player0_vertices_attractor | player1_vertices_attractor) & \
+                        vertices_smaller_priority
+
     return new_attractor
