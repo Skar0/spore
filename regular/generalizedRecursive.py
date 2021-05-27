@@ -202,7 +202,7 @@ def disj_parity_win_multiple_calls(arena, max_priorities):
 
     # update the max priorities in the remaining following the removal of vertices TODO check correctness
     max_priorities_remaining = [max(remaining_arena.priorities[func].keys()) for func in range(remaining_arena.nbr_functions)]
-    print(max_priorities_remaining)
+
     for func in range(remaining_arena.nbr_functions):
         if not max_priorities_remaining[func] % 2:
             max_priorities_remaining[func] += 1
