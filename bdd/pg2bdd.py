@@ -3,13 +3,15 @@ import bdd.arena as ar
 import bdd.misc
 
 
-def pg2bdd(pg_path, manager):
+def pg2bdd(pg_path, manager, is_gpg=True):
     """
     Loads a parity game from file and represent it as a Binary Decision Diagram (BDD).
     :param pg_path: path to the .pg file containing a parity game in PGSolver format
     :type pg_path: str
     :param manager: the BDD manager
     :type manager: dd.cudd.BDD
+    :param is_gpg: whether the file is in generalized parity extended PGSolver format
+    :type is_gpg: bool
     :return: an arena object for the arena provided in the file and a list of its vertices represented by BDDs
     :rtype: Arena, list of dd.cudd.Function
     """
@@ -17,10 +19,17 @@ def pg2bdd(pg_path, manager):
     # open file
     with open(pg_path, "r") as pg_file:
 
-        # first line has max index for vertices; vertices index starts at 0
         info_line = pg_file.readline().rstrip().split(" ")
 
-        max_index = int(info_line[1][:-1])
+        if is_gpg:
+            # first line has max index for vertices and number of priority functions; function and index start at 0
+            max_index = int(info_line[1])
+            nbr_functions = int(info_line[2][:-1])
+        else:
+            # first line has max index for vertices; index start at 0
+            max_index = int(info_line[1][:-1])
+
+        nbr_vertices = max_index + 1
 
         nbr_digits_vertices = len(bin(max_index)) - 2  # binary representation is prefixed by '0b'
 
@@ -37,7 +46,7 @@ def pg2bdd(pg_path, manager):
         player1_vertices = manager.false  # BDD for vertices of Player 1
         edges = manager.false  # BDD for edges
         # dictionary with BDD as key created on call (to avoid creating a BDD for non-existing priorities)
-        priorities = defaultdict(lambda: manager.false)
+        priorities = [defaultdict(lambda: manager.false)]
         all_vertices = [None for _ in range(max_index + 1)]
 
         # all possible variables assignments of var (not yielded in order)
@@ -53,13 +62,12 @@ def pg2bdd(pg_path, manager):
             # current BDD for the vertex
             vertex_dict = next(all_possibilities)  # dictionary encoding the valuation corresponding to the vertex
             vertex_bdd = manager.cube(vertex_dict)  # create a BDD node for this valuation
-            # TODO we need to remember the correspondence between BDD node and vertex for later
 
-            # add current node to all nodes at the correct index
+            # add current BDD node to all nodes at the correct vertex index to remember the BDD - vertex ID mapping
             all_vertices[index] = vertex_bdd
 
             # add vertex to the formula for correct priority
-            priorities[prio] = priorities[prio] | vertex_bdd
+            priorities[0][prio] = priorities[0][prio] | vertex_bdd
 
             # add vertex to correct player vertex BDD, 0 evaluates as false and 1 as true
             if player:
@@ -166,11 +174,6 @@ def pg2bdd_direct_encoding(pg_path, manager):
         for line in pg_file:
             infos = line.rstrip().split(" ")  # strip line to get info
             index = int(infos[0])
-
-            # TODO we use the encoding from int to test node in order to get a vertex and add it to the BDD
-            # TODO remembering created BDD nodes in a list like previously could be more efficient
-            # TODO does re-declaring the BDD node for a vertex using manager.cube work ? Or does it need to be the
-            #  previously declared node ?
 
             for succ in infos[3].split(","):
                 successor = int(succ)
