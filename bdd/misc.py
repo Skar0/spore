@@ -10,8 +10,6 @@ def int2dict(index, vars):
     :rtype: dict of str: bool
     """
 
-    # TODO avoid conversion from str to int to bool, find a better way to create the dictionary of Booleans
-
     nbr_vars = len(vars)
     binary_representation = format(index,
                                    '0' + str(nbr_vars) + 'b')  # string containing the binary representation of index
