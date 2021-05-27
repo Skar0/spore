@@ -119,10 +119,11 @@ class TestArena(unittest.TestCase):
             manager = _bdd.BDD()
 
             # load arena and get number of vertices
-            arena, vertices_bdd = pg2bdd(file_path, manager)
+            arena, vertices_bdd = pg2bdd(file_path, manager, is_gpg=False)
 
             nbr_vertices = len(vertices_bdd)
 
+            print(file_path)
             expected_arena = retrieve_expected_pg_arena(file_path)
 
             self.assertEqual(arena.nbr_functions, 1)
@@ -140,7 +141,7 @@ class TestArena(unittest.TestCase):
             self.assertEqual(expected_player1, actual_player1)
 
             for priority, s in expected_arena[2].items():
-                actual_priority = set(bdd2int(arena.priorities[priority], arena.vars, manager,
+                actual_priority = set(bdd2int(arena.priorities[0][priority], arena.vars, manager,
                                                     mapping=vertices_bdd))
 
                 expected_priority = set(s)
