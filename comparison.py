@@ -17,12 +17,6 @@ import bdd.recursive as bdd_pg_recursive
 import bdd.gpg2bdd as bdd_gpg_loader
 import bdd.generalizedRecursive as bdd_gpg_recursive
 
-import bddcython.gpg2bdd as bdd_c_gpg_loader
-import bddcython.generalizedRecursive as bdd_c_gpg_recursive
-
-import regularcython.gpg2arena as reg_c_gpg_loader
-import regularcython.generalizedRecursive as reg_c_gpg_recursive
-
 
 # from https://www.jujens.eu/posts/en/2018/Jun/02/python-timeout-function/#:~:text=You%20can%20use%20signals%20and,alarm%20signal%20for%20the%20timeout.&text=Even%20if%20this%20solution%20works,which%20can%20be%20a%20problem.
 
@@ -219,31 +213,6 @@ def solve_gpg_regular(gpg_path, timeout_value):
     return player0_won, end_time, winning_0, winning_1
 
 
-def solve_gpg_regular_c(gpg_path, timeout_value):
-    """
-    Load and solve the generalized parity game whose path is provided in parameter using the cythonized regular
-    implementation of the recursive algorithm.
-    """
-
-    player0_won = "TIMEOUT"
-
-    winning_0, winning_1 = None, None
-
-    start_time = time.time()
-
-    with timeout(timeout_value):
-        arena = reg_c_gpg_loader.gpg2arena(gpg_path)
-        winning_0, winning_1 = reg_c_gpg_recursive.generalized_recursive(arena)
-        player0_won = 0 in winning_0
-
-    end_time = "%.5f" % (time.time() - start_time)
-
-    if player0_won == "TIMEOUT":
-        end_time = "TIMEOUT"
-
-    return player0_won, end_time, winning_0, winning_1
-
-
 def solve_gpg_regular_partial(gpg_path, timeout_value):
     """
     Load and solve the generalized parity game whose path is provided in parameter using the regular implementation of
@@ -312,33 +281,6 @@ def solve_gpg_bdd(gpg_path, timeout_value):
         manager = _bdd.BDD()
         arena, all_vertices = bdd_gpg_loader.gpg2bdd(gpg_path, manager)
         winning_0, winning_1 = bdd_gpg_recursive.generalized_recursive(arena, manager)
-        vertex_0_dict_rep = next(manager.pick_iter(all_vertices[0]))
-        player0_won = manager.let(vertex_0_dict_rep, winning_0) == manager.true
-
-    end_time = "%.5f" % (time.time() - start_time)
-
-    if player0_won == "TIMEOUT":
-        end_time = "TIMEOUT"
-
-    return player0_won, end_time, winning_0, winning_1
-
-
-def solve_gpg_bdd_c(gpg_path, timeout_value):
-    """
-    Load and solve the generalized parity game whose path is provided in parameter using the cythonized bdd
-    implementation of the recursive algorithm.
-    """
-
-    player0_won = "TIMEOUT"
-
-    winning_0, winning_1 = None, None
-
-    start_time = time.time()
-
-    with timeout(timeout_value):
-        manager = _bdd.BDD()
-        arena, all_vertices = bdd_c_gpg_loader.gpg2bdd(gpg_path, manager)
-        winning_0, winning_1 = bdd_c_gpg_recursive.generalized_recursive(arena, manager)
         vertex_0_dict_rep = next(manager.pick_iter(all_vertices[0]))
         player0_won = manager.let(vertex_0_dict_rep, winning_0) == manager.true
 
@@ -492,13 +434,10 @@ def check_consistency_bdd(regions, realizability, is_pg, file_path):
 
     # only keep the regions that were actually computed, meaning we exclude timeouts
     computed_regions = [region for region in regions if region[0] is not None]
-    print(computed_regions)
     nbr_computed_regions = len(computed_regions)
-    print(nbr_computed_regions)
 
     # same goes for the realizability
     computed_realizability = [real for real in realizability if real != "TIMEOUT"]
-    print(computed_realizability)
 
     manager = _bdd.BDD()
 
@@ -532,10 +471,10 @@ def check_consistency_bdd(regions, realizability, is_pg, file_path):
 tlsf_and_games = "csv/tlsf-after-2min-added-gen-fater-20/"
 
 # name for the .csv file containing the comparison between the running times
-comparison_file_name = "thursday-15h-5min.csv"
+comparison_file_name = "thursday-night-10min.csv"
 
 # timeout value for the algorithms
-out = 5 * 60
+out = 10 * 60
 
 # whether to check the solutions (that is, check that the solution computed by each algorithm is the same and that the
 # intersection of the winning regions is empty and their union is the whole arena)
@@ -719,14 +658,6 @@ def compare_all_files(input_path, output_path, timeout):
                 result_string += str(time_reg_par_multiple)
                 result_string += ", "
 
-                """
-                print("    regular c")
-                won_player_0_reg, time_reg = solve_gpg_regular_c(gpg_file_path, timeout)
-                realizability.append(won_player_0_reg)
-                result_string += str(time_reg)
-                result_string += ", "
-                """
-
                 print("    bdd")
                 won_player_0_bdd, time_bdd, gen_parity_winning_0_bdd, gen_parity_winning_1_bdd = solve_gpg_bdd(
                     gpg_file_path, timeout)
@@ -747,14 +678,6 @@ def compare_all_files(input_path, output_path, timeout):
                 realizability.append(won_player_0_bdd_par_multiple)
                 result_string += str(time_bdd_par_multiple)
                 result_string += ", "
-
-                """
-                print("    bdd c")
-                won_player_0_reg, time_reg = solve_gpg_bdd_c(gpg_file_path, timeout)
-                realizability.append(won_player_0_reg)
-                result_string += str(time_reg)
-                result_string += ", "
-                """
 
                 if check_solution:
                     # checking all results between them
@@ -801,13 +724,6 @@ def compare_all_files(input_path, output_path, timeout):
                 result_string += ", "
                 realizability.append("NOT GEN")
 
-                """
-                result_string += gpg_size
-                result_string += ", "
-
-                result_string += gpg_size
-                result_string += ", "
-                """
             for realized in realizability:
                 result_string += str(realized)
                 result_string += ", "
