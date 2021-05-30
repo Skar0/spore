@@ -45,9 +45,9 @@ if __name__ == '__main__':
                             help='Use the symbolic implementation of the algorithms, '
                                  'using Binary Decision Diagrams (default).')
 
-    bdd_group.add_argument('-regular',
+    bdd_group.add_argument('-reg',
                             action='store_true',
-                            help='Use the regular, pure python, implementation of the algorithms.')
+                            help='Use the regular, explicit, implementation of the algorithms.')
 
     parser.add_argument('input_path', type=str, help='The path to the file containing the game in '
                                                      '(extended) PGSolver format')
@@ -56,7 +56,7 @@ if __name__ == '__main__':
 
     if args.pg:
 
-        if args.regular:
+        if args.reg:
 
             arena = regular.pg2arena.pg2arena(args.input_path, is_gpg=False)
 
@@ -97,7 +97,7 @@ if __name__ == '__main__':
 
     if args.gpg:
 
-        if args.regular:
+        if args.reg:
 
             arena = reg_gen_loader.gpg2arena(args.input_path)
 
