@@ -82,7 +82,16 @@ def sup_prio_expr_even(arena, bdd, min_prio, f_index, max_values):
     for curr_prio in range(init_prio, max_values[f_index] + 1, 2):
         expr_res = expr_res | arena.priorities[f_index][curr_prio]
     return expr_res
-
+# Return vertices with odd priorities greater or equal than min_prio on dimension f_index
+def sup_prio_expr_odd(arena, bdd, min_prio, f_index, max_values):
+    expr_res = bdd.false
+    if min_prio % 2 == 1:
+        init_prio = min_prio
+    else:
+        init_prio = min_prio + 1
+    for curr_prio in range(init_prio, max_values[f_index] + 1, 2):
+        expr_res = expr_res | arena.priorities[f_index][curr_prio]
+    return expr_res
 
 # Return vertices with a odd priority greater or equal than min_prios[l] in at least one dimension l
 def sup_one_prio_odd(arena, bdd, min_prios, max_values):
@@ -96,6 +105,17 @@ def sup_one_prio_odd(arena, bdd, min_prios, max_values):
             expr_res = expr_res | arena.priorities[prio_f_index][curr_prio]
     return expr_res
 
+# Return vertices with a even priority greater or equal than min_prios[l] in at least one dimension l
+def sup_one_prio_even(arena, bdd, min_prios, max_values):
+    expr_res = bdd.false
+    for prio_f_index in range(arena.nbr_functions):
+        if min_prios[prio_f_index] % 2 == 1:
+            init_prio = min_prios[prio_f_index] + 1
+        else:
+            init_prio = min_prios[prio_f_index]
+        for curr_prio in range(init_prio, max_values[prio_f_index] + 1, 2):
+            expr_res = expr_res | arena.priorities[prio_f_index][curr_prio]
+    return expr_res
 
 # Return winning regions in a game with a generalized Buchi objective for player 0
 def buchi_gen(bdd, g, f):
@@ -175,6 +195,65 @@ def buchi_solver_gen(arena, manager):
         if not w == manager.false:
             ind_game = arena.subarena(~w, manager)
             (z0, z1) = buchi_solver_gen(ind_game, manager)
+            return z0 | w, z1
+
+    return manager.false, manager.false
+
+
+def buchi_solver_gen_inverted_players(arena, manager):
+    """
+    k = nbr func TODO
+    TODO why is d never updated
+    @param arena:
+    @type arena:
+    @param manager:
+    @type manager:
+    @return:
+    @rtype:
+    """
+
+    max_priorities = [-1] * arena.nbr_functions
+
+    # TODO should we maintain existing colors somewhere ? Check if this function is a bottleneck
+    # CHECK IF THIS IS CHARLIES TODO CHECK IF THIS SHOULD BE DONE IN RECURSIVE CALLS and if ths makes ense
+    for function_index in range(arena.nbr_functions):
+
+        for priority, bdd in arena.priorities[function_index].items():
+
+            if (priority) > max_priorities[function_index]:
+                max_priorities[function_index] = (priority)
+
+    # Iterate over all 1-priority
+    for prio_f_index in range(arena.nbr_functions):
+        # arena.d[prio_f_index] max prio selon cette dimension ? TODO
+        for curr_prio in range(max_priorities[prio_f_index] + 1):
+            if curr_prio % 2 == 0 and not arena.priorities[prio_f_index][curr_prio] == manager.false:
+                u = arena.priorities[prio_f_index][curr_prio]
+                u_bis = sup_prio_expr_odd(arena, manager, curr_prio, prio_f_index, max_priorities)
+
+                w = attractor(arena, buchi_inter_safety(manager, arena, 1, u, u_bis), 1, manager) # ca change pas
+                # pour buchi inter safety j'ai du changer l'ordre dans le monotone
+                if not w == manager.false:
+                    ind_game = arena.subarena(~w, manager)
+                    (z0, z1) = buchi_solver_gen_inverted_players(ind_game, manager)
+                    return z0, z1 | w
+
+    even_priorities = [[] for _ in range(arena.nbr_functions)]
+    for prio_f_index in range(arena.nbr_functions):
+        # changee en 1 => devrait etre toutes les imapir, le + 1 doit il rester +1 ou bien +2 pour aller au dessu alors que la prio existe pasTODO
+        for curr_prio in range(1, max_priorities[prio_f_index] + 1, 2):
+            if not arena.priorities[prio_f_index][curr_prio] == manager.false:
+                even_priorities[prio_f_index].append(curr_prio)
+
+    all_combinations = product(*even_priorities) # ici ca devrait etre des odd
+    # Iterate over all 0-priority vectors
+    for curr_comb in all_combinations:
+        u = [arena.priorities[l][curr_comb[l]] for l in range(arena.nbr_functions)]
+        u_bis = sup_one_prio_even(arena, manager, curr_comb, max_priorities)
+        w = attractor(arena, buchi_inter_safety_gen(manager, arena, u, u_bis), 0, manager)
+        if not w == manager.false:
+            ind_game = arena.subarena(~w, manager)
+            (z0, z1) = buchi_solver_gen_inverted_players(ind_game, manager)
             return z0 | w, z1
 
     return manager.false, manager.false
