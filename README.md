@@ -21,7 +21,7 @@ This translation from LTL to generalized parity games is done using a modified v
 
 ## How to use
 * Instructions on how to use and build tlsf2gpg can be found on tlsf2gpg's [repository](https://github.com/gaperez64/tlsf2gpg).  
-* SPORE is written using Python 2.7 and should be fully Python 3 compatible. Dependencies can be found in [requirements.txt](https://github.com/Skar0/spore/blob/master/requirements.txt).  
+* SPORE is written using Python 2.7 and should be fully Python 3 compatible. Dependencies can be found in [requirements.txt](https://github.com/Skar0/spore/blob/master/requirements.txt). Note that `dd` should be compiled with CUDD support.
 
 The usage instructions for the standalone SPORE (generalized) parity game solver can be accessed using `python spore.py -h`.
 The command to solve a (generalized) parity game using SPORE is: 
