@@ -174,7 +174,7 @@ def buchi_solver_gen(arena, manager):
 
     max_priorities = [-1] * arena.nbr_functions
 
-    # TODO check if this should be done in every recursive call and if it makes sense
+    # TODO check if this should be done in every recursive call
     for function_index in range(arena.nbr_functions):
 
         for priority, bdd in arena.priorities[function_index].items():
@@ -230,7 +230,7 @@ def buchi_solver_gen_inverted_players(arena, manager):
 
     max_priorities = [-1] * arena.nbr_functions
 
-    # TODO check if this should be done in every recursive call and if it makes sense
+    # TODO check if this should be done in every recursive call
     for function_index in range(arena.nbr_functions):
 
         for priority, bdd in arena.priorities[function_index].items():
