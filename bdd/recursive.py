@@ -113,6 +113,36 @@ def recursive(arena, manager):
     return winning_region_player0, winning_region_player1
 
 
+def recursive_single_call(arena, manager):
+    """
+    Solve the parity game provided in arena by performing a single call to the partial solver called buchi solver and
+    solving the remaining arena using the recursive algorithm.
+    :param arena: a game arena
+    :type arena: Arena
+    :param manager: the BDD manager
+    :type manager: dd.cudd.BDD
+    :return: the solution of the provided parity game, that is the set of vertices won by each player
+    :rtype: (dd.cudd.Function, dd.cudd.Function)
+    """
+
+    if arena.player0_vertices == manager.false and arena.player1_vertices == manager.false:
+        return manager.false, manager.false
+
+    remaining_arena, partial_winning_region_player0, partial_winning_region_player1 = buchi_partial_solver(arena,
+                                                                                                           manager.false,
+                                                                                                           manager.false,
+                                                                                                           manager)
+
+    # if the game is empty, return the empty regions
+    if remaining_arena.player0_vertices == manager.false and remaining_arena.player1_vertices == manager.false:
+        return partial_winning_region_player0, partial_winning_region_player1
+
+    winning_region_player0_remaining, winning_region_player1_remaining = recursive(remaining_arena, manager)
+
+    return partial_winning_region_player0 | winning_region_player0_remaining, \
+           partial_winning_region_player1 | winning_region_player1_remaining
+
+
 def recursive_with_buchi(arena, manager):
     """
     Solve the parity game provided in arena using a combinations of the recursive algorithm and the partial solver

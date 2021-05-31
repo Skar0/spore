@@ -51,6 +51,11 @@ if __name__ == '__main__':
                             action='store_true',
                             help='Use the combination of the recursive algorithm with a partial solver (default).')
 
+    solver_group.add_argument('-snl',
+                            action='store_true',
+                            help='Perform a single call to the partial solver '
+                                 'and solve the remaining arena using the recursive algorithm.')
+
     solver_group.add_argument('-rec',
                             action='store_true',
                             help='Use the recursive algorithm.')
@@ -81,6 +86,10 @@ if __name__ == '__main__':
                 winning_region_player0, winning_region_player1 = \
                     regular.recursive.recursive(arena)
 
+            elif args.snl:
+                winning_region_player0, winning_region_player1 = \
+                    regular.recursive.recursive_single_call(arena)
+
             else:
                 winning_region_player0, winning_region_player1 = \
                     regular.recursive.recursive_with_buchi(arena)
@@ -100,6 +109,11 @@ if __name__ == '__main__':
             if args.rec:
                 winning_region_player0, winning_region_player1 = \
                     bdd.recursive.recursive(arena, manager)
+
+            elif args.snl:
+                winning_region_player0, winning_region_player1 = \
+                    bdd.recursive.recursive_single_call(arena, manager)
+
             else:
                 winning_region_player0, winning_region_player1 = \
                     bdd.recursive.recursive_with_buchi(arena, manager)
@@ -122,9 +136,13 @@ if __name__ == '__main__':
                 winning_region_player0, winning_region_player1 = \
                     regular.generalizedRecursive.generalized_recursive(arena)
 
-            else:
+            elif args.snl:
                 winning_region_player0, winning_region_player1 = \
                     regular.generalizedRecursive.generalized_recursive_with_buchi(arena)
+
+            else:
+                winning_region_player0, winning_region_player1 = \
+                    regular.generalizedRecursive.generalized_recursive_with_buchi_multiple_calls(arena)
 
             vertex_0_won_by_player0 = 0 in winning_region_player0
 
@@ -141,9 +159,14 @@ if __name__ == '__main__':
             if args.rec:
                 winning_region_player0, winning_region_player1 = \
                     bdd.generalizedRecursive.generalized_recursive(arena, manager)
-            else:
+
+            elif args.snl:
                 winning_region_player0, winning_region_player1 = \
                     bdd.generalizedRecursive.generalized_recursive_with_psolver(arena, manager)
+
+            else:
+                winning_region_player0, winning_region_player1 = \
+                    bdd.generalizedRecursive.generalized_recursive_with_psolver_multiple_calls(arena, manager)
 
             vertex_0_dict_rep = next(manager.pick_iter(all_vertices[0]))
             vertex_0_won_by_player0 = manager.let(vertex_0_dict_rep, winning_region_player0) == manager.true
