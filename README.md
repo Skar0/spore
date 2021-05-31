@@ -26,7 +26,7 @@ This translation from LTL to generalized parity games is done using a modified v
 The usage instructions for the standalone SPORE (generalized) parity game solver can be accessed using `python spore.py -h`.
 The command to solve a (generalized) parity game using SPORE is: 
 
-    python spore.py (-pg | -gpg) [-par | -rec] [-bdd | -reg] input_path
+    python spore.py (-pg | -gpg) [-par | -snl | -rec] [-bdd | -reg] input_path
 
 The following table describes the possible options:
 
@@ -35,6 +35,7 @@ The following table describes the possible options:
 | -pg            | Load a parity game (must be in PGSolver format).
 | -gpg           | Load a generalized parity game (must be in extended PGSolver format).       
 | -par           | Use the combination of the recursive algorithm with a partial solver to solve the game (default).
+| -snl           | Perform a single call to the partial solver and use the recursive algorithm to solve the remaining game..
 | -rec           | Use the recursive algorithm to solve the game.
 | -bdd           | Use the symbolic implementation of the algorithms, using Binary Decision Diagrams (default).
 | -reg           | Use the regular, explicit, implementation of the algorithms.
