@@ -35,7 +35,7 @@ The following table describes the possible options:
 | -pg            | Load a parity game (must be in PGSolver format).
 | -gpg           | Load a generalized parity game (must be in extended PGSolver format).       
 | -par           | Use the combination of the recursive algorithm with a partial solver to solve the game (default).
-| -snl           | Perform a single call to the partial solver and use the recursive algorithm to solve the remaining game..
+| -snl           | Perform a single call to the partial solver and use the recursive algorithm to solve the remaining game.
 | -rec           | Use the recursive algorithm to solve the game.
 | -bdd           | Use the symbolic implementation of the algorithms, using Binary Decision Diagrams (default).
 | -reg           | Use the regular, explicit, implementation of the algorithms.
