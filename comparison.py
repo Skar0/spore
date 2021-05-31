@@ -4,6 +4,7 @@ from contextlib import contextmanager
 import time
 import dd.cudd as _bdd
 import traceback
+import os.path
 
 import regular.pg2arena as reg_pg_loader
 import regular.recursive as reg_pg_recursive
@@ -362,9 +363,14 @@ def get_non_empty_tlsf(path):
 
             # current file is a .tlsf
 
+            empty_pg = False
+            empty_gpg = False
+
             # check whether at least one of the games is not empty
-            empty_pg = stat(path + file_name + ".pg").st_size != 0
-            empty_gpg = stat(path + file_name + ".gpg").st_size != 0
+            if os.path.isfile(path + file_name + ".pg"):
+                empty_pg = stat(path + file_name + ".pg").st_size != 0
+            if os.path.isfile(path + file_name + ".gpg"):
+                empty_gpg = stat(path + file_name + ".gpg").st_size != 0
 
             if empty_pg or empty_gpg:
                 file_names.append(file_name)
@@ -468,13 +474,13 @@ def check_consistency_bdd(regions, realizability, is_pg, file_path):
 
 
 # path to the directory which contains all tlsf files and all generated (empty or not) files
-tlsf_and_games = "csv/tlsf-after-2min-added-gen-fater-20/"
+tlsf_and_games = "/home/clement/CLionProjects/tlsf2gpg/examples-afterfix/"
 
 # name for the .csv file containing the comparison between the running times
-comparison_file_name = "thursday-night-10min.csv"
+comparison_file_name = "saturday-night-runall-regen-10m.csv"
 
 # timeout value for the algorithms
-out = 10 * 60
+out = 60 * 10
 
 # whether to check the solutions (that is, check that the solution computed by each algorithm is the same and that the
 # intersection of the winning regions is empty and their union is the whole arena)
@@ -482,7 +488,6 @@ check_solution = True
 
 # check whether there were errors in the code
 error_count = 0
-
 
 def compare_all_files(input_path, output_path, timeout):
     with open(output_path, "a") as f:
