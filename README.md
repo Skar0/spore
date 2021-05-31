@@ -41,7 +41,7 @@ The following table describes the possible options:
 
 Examples on how to launch both the standalone and toolchain versions of SPORE can be found below.  
 
-##### Standalone SPORE
+### Standalone SPORE
 
 To solve and display realizability for a generalized parity game located in the file `gen_pgame.gpg` using the BDD-based implementation 
 of the combination of the recursive algorithm and a partial solver:
@@ -56,14 +56,14 @@ To do so using the explicit implementation of the recursive algorithm:
 
     python spore.py -gpg -rec -reg gen_pgame.gpg
 
-##### Toolchain
+### Toolchain
 
 To transform a TLSF file `system.tlsf` into a generalized parity game and decide its realizability using the BDD-based implementation 
 of the combination of the recursive algorithm and a partial solver:
 
     spore_LTL_toolchain.sh system.tlsf
 
-##### Toolchain
+### Tests
 Unit tests can be run using
 
     python -m unittest discover .
