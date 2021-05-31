@@ -86,9 +86,8 @@ def disj_par_win(arena, max_priorities, manager):
     :rtype: (dd.cudd.Function, dd.cudd.Function)
     """
 
-    # TODO probably should record all vertices somewhere to avoid doing the | a lot between player0 and player1 vertices
     if all(value == 1 for value in max_priorities) or \
-            (arena.player0_vertices | arena.player1_vertices) == manager.false:
+            ((arena.player0_vertices == manager.false) and (arena.player1_vertices == manager.false)):
         return arena.player0_vertices | arena.player1_vertices, manager.false
 
     for function_index in range(arena.nbr_functions):
@@ -158,7 +157,8 @@ def generalized_recursive_with_psolver(arena, manager):
 
     remaining_unsolved = arena.subarena(~(partial_winning_region_player0 | partial_winning_region_player1), manager)
 
-    if (remaining_unsolved.player0_vertices | remaining_unsolved.player1_vertices) == manager.false:
+    if (remaining_unsolved.player0_vertices == manager.false) and \
+            (remaining_unsolved.player1_vertices == manager.false):
         return partial_winning_region_player0, partial_winning_region_player1
 
     max_priorities = complement_priorities(remaining_unsolved, manager)
@@ -178,15 +178,6 @@ def generalized_recursive_with_psolver_multiple_calls(arena, manager):
     :type manager: dd.cudd.BDD
     :return: the solution of the provided generalized parity game, that is the set of vertices won by each player
     :rtype: (dd.cudd.Function, dd.cudd.Function)
-    """
-
-    """
-    partial_winning_region_player0, partial_winning_region_player1 = buchi_solver_gen(arena, manager)
-
-    remaining_unsolved = arena.subarena(~(partial_winning_region_player0 | partial_winning_region_player1), manager)
-
-    if (remaining_unsolved.player0_vertices | remaining_unsolved.player1_vertices) == manager.false:
-        return partial_winning_region_player0, partial_winning_region_player1
     """
 
     max_priorities = complement_priorities(arena, manager)
@@ -209,18 +200,17 @@ def disj_par_win_multiple_calls(arena, max_priorities, manager):
     :rtype: (dd.cudd.Function, dd.cudd.Function)
     """
 
-    # TODO probably should record all vertices somewhere to avoid doing the | a lot between player0 and player1 vertices
     if all(value == 1 for value in max_priorities) or \
-            (arena.player0_vertices | arena.player1_vertices) == manager.false:
+            ((arena.player0_vertices == manager.false) and (arena.player1_vertices == manager.false)):
         return arena.player0_vertices | arena.player1_vertices, manager.false
 
     partial_winning_region_player0, partial_winning_region_player1 = buchi_solver_gen_inverted_players(arena, manager)
 
     remaining_unsolved = arena.subarena(~(partial_winning_region_player0 | partial_winning_region_player1), manager)
 
-    if (remaining_unsolved.player0_vertices | remaining_unsolved.player1_vertices) == manager.false:
+    if (remaining_unsolved.player0_vertices == manager.false) and \
+            (remaining_unsolved.player1_vertices == manager.false):
         return partial_winning_region_player0, partial_winning_region_player1
-
 
     for function_index in range(remaining_unsolved.nbr_functions):
 
