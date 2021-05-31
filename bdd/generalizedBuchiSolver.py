@@ -84,7 +84,7 @@ def buchi_inter_safety(bdd, g, i, f, s):
     if i == 0:
         oppo = 1
     else:
-        oppo = 0 # TODO here changed because for him -1 is 1 and for me -1 evaluates to False (which is 0)
+        oppo = 0  # changed here because for Charly -1 is player 1 and for me -1 evaluates to False (which is 0)
     attr_adv_f = attractor(g, s,oppo, bdd)
     g_bar = g.subarena(~attr_adv_f, bdd)
     return buchi(bdd, g_bar, i, f)
@@ -99,6 +99,7 @@ def sup_prio_expr_even(arena, bdd, min_prio, f_index, max_values):
     for curr_prio in range(init_prio, max_values[f_index] + 1, 2):
         expr_res = expr_res | arena.priorities[f_index][curr_prio]
     return expr_res
+
 # Return vertices with odd priorities greater or equal than min_prio on dimension f_index
 def sup_prio_expr_odd(arena, bdd, min_prio, f_index, max_values):
     expr_res = bdd.false
@@ -162,8 +163,7 @@ def buchi_inter_safety_gen(bdd, g, f, s):
 
 def buchi_solver_gen(arena, manager):
     """
-    k = nbr func TODO
-    TODO why is d never updated
+    k = nbr func
     @param arena:
     @type arena:
     @param manager:
@@ -174,7 +174,7 @@ def buchi_solver_gen(arena, manager):
 
     max_priorities = [-1] * arena.nbr_functions
 
-    # TODO should we maintain existing colors somewhere ? Check if this function is a bottleneck
+    # TODO check if this should be done in every recursive call and if it makes sense
     for function_index in range(arena.nbr_functions):
 
         for priority, bdd in arena.priorities[function_index].items():
@@ -184,7 +184,7 @@ def buchi_solver_gen(arena, manager):
 
     # Iterate over all 1-priority
     for prio_f_index in range(arena.nbr_functions):
-        # arena.d[prio_f_index] max prio selon cette dimension ? TODO
+        # arena.d[prio_f_index] max prio selon cette dimension ?
         for curr_prio in range(max_priorities[prio_f_index] + 1):
             if curr_prio % 2 == 1 and not arena.priorities[prio_f_index][curr_prio] == manager.false:
                 u = arena.priorities[prio_f_index][curr_prio]
@@ -219,8 +219,7 @@ def buchi_solver_gen(arena, manager):
 
 def buchi_solver_gen_inverted_players(arena, manager):
     """
-    k = nbr func TODO
-    TODO why is d never updated
+    k = nbr func
     @param arena:
     @type arena:
     @param manager:
@@ -231,8 +230,7 @@ def buchi_solver_gen_inverted_players(arena, manager):
 
     max_priorities = [-1] * arena.nbr_functions
 
-    # TODO should we maintain existing colors somewhere ? Check if this function is a bottleneck
-    # CHECK IF THIS IS CHARLIES TODO CHECK IF THIS SHOULD BE DONE IN RECURSIVE CALLS and if ths makes ense
+    # TODO check if this should be done in every recursive call and if it makes sense
     for function_index in range(arena.nbr_functions):
 
         for priority, bdd in arena.priorities[function_index].items():
