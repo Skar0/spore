@@ -2,7 +2,7 @@
 A prototype symbolic implementation of partial solvers for (generalized) parity games applied to LTL realizability.
 
 SPORE was developed by
-* Charly Delfosse, University of Mons
+* Charly Delfosse, University of Mons ([website](http://math.umons.ac.be/staff/Delfosse.Charly/))
 * Gaëtan Staquet, University of Mons ([website](http://informatique.umons.ac.be/staff/Staquet.Gaetan/))
 * Clément Tamines, University of Mons ([website](https://clement.tamin.es))
 
