@@ -16,6 +16,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from collections import defaultdict
+from bdd.bdd_util import reachable_states
 
 
 class Arena:
@@ -84,3 +85,30 @@ class Arena:
         subarena.priorities = priorities_subarena
 
         return subarena
+
+    def restrict_to_reachable_states(self, init_state, manager):
+        """
+        Restrict the current arena to reachable states only, for vertices controlled by players and priorities.
+        Field nbr_vertices can become incorrect !
+        :param init_state: the initial state as boolean expression
+        :type init_state: dd.cudd.Function
+        :param manager: the BDD manager
+        :type manager: dd.cudd.BDD
+        """
+
+        reach_states = reachable_states(init_state, self.edges, self.vars, self.inv_mapping_bis, [], manager)
+
+        # avoid illegal transitions e.g. from vertices that does not exist
+        self.player0_vertices &= reach_states
+        self.player1_vertices &= reach_states
+
+        # No need to modify edges if we just remove other things (really particular examples may need this ?)
+        # arena.edges &= reach_states & manager.let(mapping_bis, reach_states)
+
+        new_priorities = []
+        for function in self.priorities:
+            new_dim = defaultdict(lambda: manager.false)
+            for prio in function:
+                new_dim[prio] = function[prio] & reach_states
+            new_priorities.append(new_dim)
+        self.priorities = new_priorities

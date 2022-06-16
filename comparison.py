@@ -35,6 +35,11 @@ import bdd.recursive as bdd_pg_recursive
 import bdd.gpg2bdd as bdd_gpg_loader
 import bdd.generalizedRecursive as bdd_gpg_recursive
 
+from bdd.dpa2bdd import explicit2symbolic_path
+from bdd.dpa2gpg import symb_dpa2gpg
+from bdd.bdd_util import decomp_data_file
+from functools import reduce
+
 
 # from https://www.jujens.eu/posts/en/2018/Jun/02/python-timeout-function/#:~:text=You%20can%20use%20signals%20and,alarm%20signal%20for%20the%20timeout.&text=Even%20if%20this%20solution%20works,which%20can%20be%20a%20problem.
 
@@ -366,6 +371,119 @@ def solve_gpg_bdd_partial_multiple_calls(gpg_path, timeout_value):
     return player0_won, end_time, winning_0, winning_1
 
 
+def solve_gpg_full_bdd(data_path, timeout_value):
+    player0_won = "TIMEOUT"
+    winning_0, winning_1 = None, None
+
+    start_time = time.time()
+
+    with timeout(timeout_value):
+        input_signals, output_signals, automata_paths = decomp_data_file(data_path)
+
+        manager = _bdd.BDD()
+        manager.declare(*input_signals, *output_signals)
+        manager.configure(reordering=True)
+
+        automata = [explicit2symbolic_path(path, manager) for path in automata_paths]
+
+        product = reduce(lambda a1, a2: a1.product(a2, manager), automata)
+
+        arena, init = symb_dpa2gpg(product, input_signals, output_signals, manager)
+        n_nodes_in_bdd = len(manager)
+
+        winning_0, winning_1 = bdd_gpg_recursive.generalized_recursive(arena, manager)
+        vertex_0_dict_rep = next(manager.pick_iter(init))
+        player0_won = manager.let(vertex_0_dict_rep, winning_0) == manager.true
+
+    end_time = "%.5f" % (time.time() - start_time)
+
+    if player0_won == "TIMEOUT":
+        end_time = "TIMEOUT"
+
+    return player0_won, end_time, winning_0, winning_1, n_nodes_in_bdd, arena.nbr_vertices
+
+
+def solve_gpg_full_bdd_partial(data_path, timeout_value):
+    player0_won = "TIMEOUT"
+    winning_0, winning_1 = None, None
+
+    start_time = time.time()
+
+    with timeout(timeout_value):
+        input_signals, output_signals, automata_paths = decomp_data_file(data_path)
+
+        manager = _bdd.BDD()
+        manager.declare(*input_signals, *output_signals)
+        manager.configure(reordering=True)
+
+        automata = [explicit2symbolic_path(path, manager) for path in automata_paths]
+
+        product = reduce(lambda a1, a2: a1.product(a2, manager), automata)
+
+        arena, init = symb_dpa2gpg(product, input_signals, output_signals, manager)
+        n_nodes_in_bdd = len(manager)
+
+        winning_0, winning_1 = bdd_gpg_recursive.generalized_recursive_with_psolver(arena, manager)
+        vertex_0_dict_rep = next(manager.pick_iter(init))
+        player0_won = manager.let(vertex_0_dict_rep, winning_0) == manager.true
+
+    end_time = "%.5f" % (time.time() - start_time)
+
+    if player0_won == "TIMEOUT":
+        end_time = "TIMEOUT"
+
+    return player0_won, end_time, winning_0, winning_1, n_nodes_in_bdd, arena.nbr_vertices
+
+
+def solve_gpg_full_bdd_partial_multiple_calls(data_path, timeout_value):
+    player0_won = "TIMEOUT"
+    winning_0, winning_1 = None, None
+
+    start_time = time.time()
+
+    with timeout(timeout_value):
+        input_signals, output_signals, automata_paths = decomp_data_file(data_path)
+
+        manager = _bdd.BDD()
+        manager.declare(*input_signals, *output_signals)
+        manager.configure(reordering=True)
+
+        automata = [explicit2symbolic_path(path, manager) for path in automata_paths]
+
+        product = reduce(lambda a1, a2: a1.product(a2, manager), automata)
+
+        arena, init = symb_dpa2gpg(product, input_signals, output_signals, manager)
+        n_nodes_in_bdd = len(manager)
+
+        winning_0, winning_1 = bdd_gpg_recursive.generalized_recursive_with_psolver_multiple_calls(arena, manager)
+        vertex_0_dict_rep = next(manager.pick_iter(init))
+        player0_won = manager.let(vertex_0_dict_rep, winning_0) == manager.true
+
+    end_time = "%.5f" % (time.time() - start_time)
+
+    if player0_won == "TIMEOUT":
+        end_time = "TIMEOUT"
+
+    return player0_won, end_time, winning_0, winning_1, n_nodes_in_bdd, arena.nbr_vertices
+
+def time_construction_game_full_bdd(data_path, timeout_value):
+    start_time = time.time()
+
+    with timeout(timeout_value):
+        input_signals, output_signals, automata_paths = decomp_data_file(data_path)
+
+        manager = _bdd.BDD()
+        manager.declare(*input_signals, *output_signals)
+        manager.configure(reordering=True)
+
+        automata = [explicit2symbolic_path(path, manager) for path in automata_paths]
+
+        product = reduce(lambda a1, a2: a1.product(a2, manager), automata)
+
+        symb_dpa2gpg(product, input_signals, output_signals, manager)
+    end_time = "%.5f" % (time.time() - start_time)
+    return end_time
+
 def get_non_empty_tlsf(path):
     """
     Get all names of tlsf files yielding at least one non-empty .pg or .gpg file
@@ -393,6 +511,17 @@ def get_non_empty_tlsf(path):
                 file_names.append(file_name)
             else:
                 empty_for_both.append(file_name)
+
+    return file_names
+
+
+def get_tlsf_files(path):
+    file_names = []
+
+    for file_name in listdir(path):
+
+        if file_name[-5:] == ".tlsf":
+            file_names.append(file_name)
 
     return file_names
 
@@ -510,12 +639,6 @@ def compare_all_files(input_path, output_path, timeout):
     with open(output_path, "a") as f:
 
         f.write("FILE, "
-                "PG SIZE, "
-                "REG TIME, "
-                "REG PA TIME, "
-                "BDD TIME, "
-                "BDD PA CHA TIME, "
-                "BDD PA CLEM TIME, "
                 "GPG SIZE, "
                 "GPG FUNC, "
                 "REG TIME, "
@@ -524,6 +647,12 @@ def compare_all_files(input_path, output_path, timeout):
                 "BDD TIME, "
                 "BDD PA TIME, "
                 "BDD PA MU TIME, "
+                "FULL BDD GENERATION TIME, "
+                "FULL BDD BDD SIZE, "
+                "FULL BDD GAME SIZE, "
+                "FULL BDD TIME, "
+                "FULL BDD PA TIME, "
+                "FULL BDD PA MU TIME, "
                 "REAL REG PG, "
                 "REAL REG PA PG, "
                 "REAL BDD PG, "
@@ -537,13 +666,17 @@ def compare_all_files(input_path, output_path, timeout):
                 "REAL BDD PA MU GPG, "
                 "\n")
 
-        at_least_one_non_empty = sorted(get_non_empty_tlsf(input_path))
+        # at_least_one_non_empty = sorted(get_non_empty_tlsf(input_path))
+        all_files = sorted(get_tlsf_files(input_path))
 
-        nbr_files = len(at_least_one_non_empty)
+        # nbr_files = len(at_least_one_non_empty)
+        nbr_files = len(all_files)
 
         current_done = 0
 
-        for file_name in at_least_one_non_empty:
+        # for file_name in at_least_one_non_empty:
+        for file_name in all_files:
+            print(file_name)
 
             print("    " * 10 + file_name + " " + str(int(100 * (float(current_done) / float(nbr_files)))) + " % done")
             current_done += 1
@@ -554,93 +687,7 @@ def compare_all_files(input_path, output_path, timeout):
             result_string += file_name
             result_string += ", "
 
-            # parity game analysis
-            print("parity")
-            pg_file_path = file_path + ".pg"
-
-            if stat(pg_file_path).st_size != 0:
-                pg_size, _ = get_game_size(pg_file_path)
-            else:
-                pg_size = "NOT GEN"
-
-            result_string += str(pg_size)
-            result_string += ", "
-
             realizability = []
-
-            if pg_size != "NOT GEN":
-                print("    regular")
-                won_player_0_reg, time_reg, parity_winning_0_reg, parity_winning_1_reg = solve_pg_regular(pg_file_path,
-                                                                                                          timeout)
-                realizability.append(won_player_0_reg)
-                result_string += str(time_reg)
-                result_string += ", "
-
-                print("    regular partial")
-                won_player_0_reg_par, time_reg_par, parity_winning_0_reg_par, parity_winning_1_reg_par = solve_pg_regular_partial(
-                    pg_file_path, timeout)
-                realizability.append(won_player_0_reg_par)
-                result_string += str(time_reg_par)
-                result_string += ", "
-
-                print("    bdd")
-                won_player_0_bdd, time_bdd, parity_winning_0_bdd, parity_winning_1_bdd = solve_pg_bdd(pg_file_path,
-                                                                                                      timeout)
-                realizability.append(won_player_0_bdd)
-                result_string += str(time_bdd)
-                result_string += ", "
-
-                print("    bdd partial charly")
-                won_player_0_bdd_par_cha, time_bdd_par_cha, parity_winning_0_bdd_par_cha, parity_winning_1_bdd_par_cha = solve_pg_bdd_partial(pg_file_path, timeout)
-                realizability.append(won_player_0_bdd_par_cha)
-                result_string += str(time_bdd_par_cha)
-                result_string += ", "
-
-                print("    bdd partial clem")
-                won_player_0_bdd_par_clem, time_bdd_par_clem, parity_winning_0_bdd_par_clem, parity_winning_1_bdd_par_clem = solve_pg_bdd_partial_debug(
-                    pg_file_path, timeout)
-                realizability.append(won_player_0_bdd_par_clem)
-                result_string += str(time_bdd_par_clem)
-                result_string += ", "
-
-                if check_solution:
-                    # checking all results between them
-
-                    pg_regions_reg = [(parity_winning_0_reg, parity_winning_1_reg),
-                                  (parity_winning_0_reg_par, parity_winning_1_reg_par)]
-
-                    pg_real_reg = [won_player_0_reg, won_player_0_reg_par]
-
-                    check_consistency_regular(pg_regions_reg, pg_real_reg, True, pg_file_path)
-
-                    pg_regions_bdd = [(parity_winning_0_bdd, parity_winning_1_bdd),
-                                  (parity_winning_0_bdd_par_cha, parity_winning_1_bdd_par_cha),
-                                      (parity_winning_0_bdd_par_clem, parity_winning_1_bdd_par_clem)]
-
-                    pg_real_bdd = [won_player_0_bdd, won_player_0_bdd_par_cha, won_player_0_bdd_par_clem]
-
-                    check_consistency_bdd(pg_regions_bdd, pg_real_bdd, True, pg_file_path)
-
-            else:
-                result_string += pg_size
-                result_string += ", "
-                realizability.append("NOT GEN")
-
-                result_string += pg_size
-                result_string += ", "
-                realizability.append("NOT GEN")
-
-                result_string += pg_size
-                result_string += ", "
-                realizability.append("NOT GEN")
-
-                result_string += pg_size
-                result_string += ", "
-                realizability.append("NOT GEN")
-
-                result_string += pg_size
-                result_string += ", "
-                realizability.append("NOT GEN")
 
             # generalized parity game analysis
             print("generalized")
@@ -745,6 +792,37 @@ def compare_all_files(input_path, output_path, timeout):
                 result_string += gpg_size
                 result_string += ", "
                 realizability.append("NOT GEN")
+
+            full_bdd_data_path = "automata/" + file_name + "/data.txt"
+            print("    generating game")
+            time_generation = time_construction_game_full_bdd(full_bdd_data_path, timeout)
+            result_string += str(time_generation)
+            result_string += ", "
+
+            print("    full bdd")
+            won_player_0_full_bdd, time_full_bdd, gen_parity_winning_0_full_bdd, gen_parity_winning_1_full_bdd, n_nodes_in_bdd, nbr_vertices_in_game = solve_gpg_full_bdd(
+                full_bdd_data_path, timeout)
+            realizability.append(won_player_0_full_bdd)
+            result_string += str(n_nodes_in_bdd)
+            result_string += ", "
+            result_string += str(nbr_vertices_in_game)
+            result_string += ", "
+            result_string += str(time_full_bdd)
+            result_string += ", "
+
+            print("    full bdd partial")
+            won_player_0_full_bdd_par, time_full_bdd_par, gen_parity_winning_0_full_bdd_par, gen_parity_winning_1_full_bdd_par, _, _ = solve_gpg_full_bdd_partial(
+                full_bdd_data_path, timeout)
+            realizability.append(won_player_0_full_bdd_par)
+            result_string += str(time_full_bdd_par)
+            result_string += ", "
+
+            print("    full bdd partial multiple calls")
+            won_player_0_full_bdd_par_multiple, time_full_bdd_par_multiple, gen_parity_winning_0_full_bdd_par_multiple, gen_parity_winning_1_full_bdd_par_multiple, _, _ = solve_gpg_full_bdd_partial_multiple_calls(
+                full_bdd_data_path, timeout)
+            realizability.append(won_player_0_full_bdd_par_multiple)
+            result_string += str(time_full_bdd_par_multiple)
+            result_string += ", "
 
             for realized in realizability:
                 result_string += str(realized)
