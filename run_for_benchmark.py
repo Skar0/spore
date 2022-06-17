@@ -138,7 +138,7 @@ def construct_full_bdd_arena(data_path, dynamic_reordering=True, arbitrary_reord
     manager.declare(*input_signals, *output_signals)
     manager.configure(reordering=dynamic_reordering)
 
-    automata = [explicit2symbolic_path(path, manager) for path in automata_paths]
+    automata = [explicit2symbolic_path(path_, manager) for path_ in automata_paths]
 
     if arbitrary_reordering:
         nb_total_var = sum(map(lambda a: len(a.vars), automata))

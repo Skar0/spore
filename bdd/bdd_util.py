@@ -54,10 +54,12 @@ def reachable_states(init, transitions, vars, inv_mapping_bis, ap, manager):
     :type init: dd.cudd.Function
     :param transitions: boolean expression to describe transitions or edges
     :type transitions: dd.cudd.Function
-    :param vars: existing variables we want to find on each step.
+    :param vars: existing variables we want to find on each step
     :type vars: list[str]
     :param inv_mapping_bis: mapping that replaces bis vars to vars
     :type inv_mapping_bis: dict[str,str]
+    :param ap: existing atomic propositions labeling the edges
+    :type ap: list[str]
     :param manager: the BDD manager
     :type manager: dd.cudd.BDD
     :return: a boolean expression that only represents the node given
@@ -179,7 +181,7 @@ def print_automaton_info(aut, manager):
         print("priorities")
         i = 0
         for dim in map(
-                lambda d: dict(map(lambda i: (i[0], list(manager.pick_iter(i[1], care_vars=aut.vars))), d.items())),
+                lambda d: dict(map(lambda i_: (i_[0], list(manager.pick_iter(i_[1], care_vars=aut.vars))), d.items())),
                 aut.priorities):
             print(">> dimension =", i)
             for prio, state in dim.items():
@@ -196,8 +198,8 @@ def print_arena_info(arena, init, manager):
           get_model_list(list(manager.pick_iter(init, care_vars=arena.vars)), arena.vars))
 
     print("Reachable states :")
-    R = reachable_states(init, arena.edges, arena.vars, arena.inv_mapping_bis, [], manager)
-    for i in manager.pick_iter(R, care_vars=arena.vars):
+    reach_states = reachable_states(init, arena.edges, arena.vars, arena.inv_mapping_bis, [], manager)
+    for i in manager.pick_iter(reach_states, care_vars=arena.vars):
         print(get_model(i, arena.vars))
 
     print("Vertices of p0 :")

@@ -1,0 +1,3 @@
+a
+b
+arenas/automata/example_3/1.hoaf

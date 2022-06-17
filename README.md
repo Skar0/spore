@@ -7,7 +7,8 @@ SPORE was developed by
 * Gaëtan Staquet, University of Mons ([website](http://informatique.umons.ac.be/staff/Staquet.Gaetan/))
 * Clément Tamines, University of Mons ([website](https://clement.tamin.es))
 
-The LTL realizability toolchain of SPORE uses code from [tlsf2gpg](https://github.com/gaperez64/tlsf2gpg).
+The LTL realizability toolchain of SPORE uses code from either [tlsf2gpg](https://github.com/gaperez64/tlsf2gpg), or
+[SyfCo](https://github.com/reactive-systems/syfco) and [ltl2tgba](https://spot.lrde.epita.fr/ltl2tgba.html).
 
 
 
@@ -20,14 +21,31 @@ This translation from LTL to generalized parity games is done using a modified v
    A description of the partial solvers implemented in SPORE and references to the recursive algorithm for (generalized) parity 
    games can be found in [this paper](https://arxiv.org/abs/1907.06913).
 
+### Full BDD approach
+In order to optimize the practical execution time, the symbolic implementation can be used in another way with a full BDD
+approach, using other tools. The toolchain used by SPORE for the full BDD algorithm is the following:
+1. In `create_parity_automata.sh`, the LTL formulas as [TLSF format](https://arxiv.org/abs/1604.02284) are extracted by
+   using [SyfCo](https://github.com/reactive-systems/syfco). We get the LTL formula as a more common syntax and its input and output atomic propositions.
+2. Still in `create_parity_automata.sh`, the raw LTL formula is sent to [ltl2tgba](https://spot.lrde.epita.fr/ltl2tgba.html),
+   a command from [Spot](https://spot.lrde.epita.fr/). This command generates some deterministic parity automata in a temporary
+   folder `automata/game/`.
+3. SPORE translates those automata into symbolic parity automata, then computes the product of those automata,
+   leading to a single generalized parity automata. It is afterwards translated into a symbolic generalized parity
+   game and the same algorithms to solve generalized parity games to decide whether the input is realizable.
+
 ## How to use
 * Instructions on how to use and build tlsf2gpg can be found on tlsf2gpg's [repository](https://github.com/gaperez64/tlsf2gpg).  
 * SPORE is written using Python 2.7 and should be fully Python 3 compatible. Dependencies can be found in [requirements.txt](https://github.com/Skar0/spore/blob/master/requirements.txt). Note that `dd` should be compiled with CUDD support.
+* The full BDD approach needs SyfCo, follow the instructions of the [repository](https://github.com/reactive-systems/syfco) to install it.
+* The full BDD approach also needs Spot, more precisely their [ltl2tgba](https://spot.lrde.epita.fr/ltl2tgba.html) command.
+  Instructions on how to compile Spot can be found on the Spot's [website](https://spot.lrde.epita.fr/install.html).
+  If needed, the user can increase the number of acceptance sets used by Spot with `./configure --enable-max-accsets=64`
+  to allow the generation of some additional automata.
 
 The usage instructions for the standalone SPORE (generalized) parity game solver can be accessed using `python spore.py -h`.
 The command to solve a (generalized) parity game using SPORE is: 
 
-    python spore.py (-pg | -gpg) [-par | -snl | -rec] [-bdd | -reg] input_path
+    python spore.py (-pg | -gpg) [-par | -snl | -rec] [-bdd | -reg | -fbdd] [-dynord] [-arbord] [-rstredge] input_path
 
 The following table describes the possible options:
 
@@ -40,10 +58,14 @@ The following table describes the possible options:
 | -rec           | Use the recursive algorithm to solve the game.
 | -bdd           | Use the symbolic implementation of the algorithms, using Binary Decision Diagrams (default).
 | -reg           | Use the regular, explicit, implementation of the algorithms.
+| -fbdd          | Use the symbolic implementation of the algorithms, using Binary Decision Diagrams, and in addition, use a symbolic implementation of automata.
+| -dynord        | With -fbdd only, use the dynamic ordering available in dd with CUDD as backend.
+| -arbord        | With -fbdd only, enable an arbitrary ordering of the BDD just before the computation of the product autamaton : (1) state variables, (2) Atomic porpositions, (3) state variable bis.
+| -rstredge      | With -fbdd only, enable the restriction of edges to reachable vertices, incoming and outgoing, when the symbolic arena is built.
 
 Examples on how to launch both the standalone and toolchain versions of SPORE can be found below.  
 
-### Standalone SPORE
+### Standalone SPORE -reg or -bdd
 
 To solve and display realizability for a generalized parity game located in the file `gen_pgame.gpg` using the BDD-based implementation 
 of the combination of the recursive algorithm and a partial solver:
@@ -58,12 +80,30 @@ To do so using the explicit implementation of the recursive algorithm:
 
     python spore.py -gpg -rec -reg gen_pgame.gpg
 
-### Toolchain
+### Standalone SPORE -fbdd
+
+With the argument -fbdd, so the full BDD algorithms, the input path must be the file `automata/game/data.txt` that
+contains input and output atomic propositions, and paths to the automata:
+
+    python spore.py -gpg -par -fbdd automata/game/data.txt
+
+Other parameters such as -dynord, -arbord and -rstredge are also available in this case.
+
+
+### Toolchain for tlsf2gpg
 
 To transform a TLSF file `system.tlsf` into a generalized parity game and decide its realizability using the BDD-based implementation 
 of the combination of the recursive algorithm and a partial solver:
 
     spore_LTL_toolchain.sh system.tlsf
+
+### Toolchain for SyfCo and ltl2tgba
+
+To transform a TLSF file `system.tlsf` into some parity automata and decide the realizability of the symbolic generalized
+parity game computed from the product of those symbolic automata, using the BDD-based implementation of the combination
+of the recursive algorithm and a partial solver:
+
+    spore_LTL_toolchain_fbdd.sh system.tlsf
 
 ### Tests
 Unit tests can be run using
@@ -73,13 +113,20 @@ Unit tests can be run using
 from the root directory of the project.
 ## Formats
 
-The `input_path` argument must be the path to a file containing a parity game in [PGSolver format](https://github.com/tcsprojects/pgsolver) 
-or a generalized parity game in extended PGSolver format. 
+For the regular and BDD approach, using tlsf2gpg, the `input_path` argument must be the path to a file containing a parity
+game in [PGSolver format](https://github.com/tcsprojects/pgsolver) or a generalized parity game in extended PGSolver format.
 
 The extended PGSolver format follows the same format as PGSolver for
 vertices and successors, with two changes. First, the first line of the file must be of the form `generalized-parity n m;` 
 where `n` is the maximal index used for the vertices (as in the original format) and `m` is the number of priority functions.
 Then, in each line describing a vertex, `m` priorities should be specified. Examples can be found in the `arenas/gpg/` directory.
+
+
+For the full BDD approach, the `input_path` argument must be the path to a file `data.txt` generated by
+`create_parity_automata.sh`. This file contains a list of input atomic propositions as first line, a list of output atomic
+propositions in the second line and then as many lines as there are parity automata generated by `ltl2tgba`, called in `create_parity_automata.sh`.
+Those last lines lead are paths to their respective automaton files.
+
 
 Since SPORE is meant to be used for LTL realizability, the output of the tool is `REALIZABLE` if the LTL formula used to
 generate the input game is realizable, and `UNREALIZABLE` if it is not.

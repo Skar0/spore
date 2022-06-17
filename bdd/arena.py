@@ -86,7 +86,7 @@ class Arena:
 
         return subarena
 
-    def restrict_to_reachable_states(self, init_state, manager):
+    def restrict_to_reachable_states(self, init_state, manager, restrict_reach_edges=False, mapping_bis=None):
         """
         Restrict the current arena to reachable states only, for vertices controlled by players and priorities.
         Field nbr_vertices can become incorrect !
@@ -94,6 +94,12 @@ class Arena:
         :type init_state: dd.cudd.Function
         :param manager: the BDD manager
         :type manager: dd.cudd.BDD
+        :param restrict_reach_edges: if we have to restrict edges in addition to vertices, it may not be needed but
+                                     could impact the performance
+        :type restrict_reach_edges: bool
+        :param mapping_bis: if restrict_reach_edges is set to True, it must contain the mapping of bis
+                            variables for the outgoing edges
+        :type mapping_bis: dict
         """
 
         reach_states = reachable_states(init_state, self.edges, self.vars, self.inv_mapping_bis, [], manager)
@@ -102,8 +108,10 @@ class Arena:
         self.player0_vertices &= reach_states
         self.player1_vertices &= reach_states
 
-        # No need to modify edges if we just remove other things (really particular examples may need this ?)
-        # arena.edges &= reach_states & manager.let(mapping_bis, reach_states)
+        # No need to modify edges if we just restrict vertices
+        # TODO: is the following code needed ? What is the impact on the computation time ?
+        if restrict_reach_edges:
+            self.edges &= reach_states & manager.let(mapping_bis, reach_states)
 
         new_priorities = []
         for function in self.priorities:

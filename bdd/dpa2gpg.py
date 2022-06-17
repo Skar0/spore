@@ -3,7 +3,7 @@ import math
 from bdd.arena import Arena
 
 
-def symb_dpa2gpg(aut, ap_inpt, ap_oupt, manager):
+def symb_dpa2gpg(aut, ap_inpt, ap_oupt, manager, restrict_reach_edges=False):
     """
     Construct a new symbolic generalized parity game (gpg) from a symbolic generalized parity automaton (dpa).
     :param aut: the source automaton
@@ -14,9 +14,14 @@ def symb_dpa2gpg(aut, ap_inpt, ap_oupt, manager):
     :type ap_oupt: list[str]
     :param manager: the BDD manager
     :type manager: dd.cudd.BDD
+    :param restrict_reach_edges: true to restrict edges in addition to vertices, it may not be needed
+    :type restrict_reach_edges: bool
     :return: a symbolic gpg object that represents the symbolic dpa
     :rtype: Arena
     """
+
+    # First, we define the variables to represent the symbolic arena through the BDD,
+    # we need bis variables to define the outgoing vertex of each edge.
 
     ap_inpt_bis = list(map(lambda s: s + 'b"', ap_inpt))
 
@@ -36,7 +41,7 @@ def symb_dpa2gpg(aut, ap_inpt, ap_oupt, manager):
     vari = manager.var("i")
     varib = manager.var("ib")
 
-    # player0 : system, player1 : env
+    # player0 : system, has vertices defined with i, player1 : env, possesses the complementaty
     sys_vertices = vari
     env_vertices = ~vari
 
@@ -87,8 +92,11 @@ def symb_dpa2gpg(aut, ap_inpt, ap_oupt, manager):
     arena.edges = edges
     arena.priorities = priorities
 
-    # If there is not reachable states, arena.nbr_vertices becomes incorrect, we should
-    # count with a SAT count, which is a heavy operation we cannot afford.
-    arena.restrict_to_reachable_states(init, manager)
+    # If there are some reachable states, arena.nbr_vertices becomes incorrect, we should
+    # count with a SAT count to correct this, which is a heavy operation we cannot afford.
+    # Solver algorithms do not use the variable arena.nbr_vertices, so it doesn't matter.
+    arena.restrict_to_reachable_states(init, manager,
+                                       restrict_reach_edges=restrict_reach_edges,
+                                       mapping_bis=mapping_bis)
 
     return arena, init

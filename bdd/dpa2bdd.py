@@ -18,7 +18,7 @@ def explicit2symbolic_spot(aut, manager):
     :rtype: SymbolicGenDPA
     """
 
-    # import spot here because don't want to import it if we don't use this method (if spot isn't installed)
+    # import spot here because don't want to import it if we don't use this method (if python bindings aren't installed)
     import spot  # spot is already setup
 
     nbr_states = aut.num_states()
@@ -117,7 +117,7 @@ def explicit2symbolic_path(path, manager):
         f.readline()  # name
         nbr_states = int(f.readline().strip().split('States: ')[1])
         init_state_number = int(f.readline().strip().split('Start: ')[1])
-        ap = list(map(lambda x: x[1:-1], f.readline().strip().split(" ")[2:]))
+        ap = list(map(lambda x_: x_[1:-1], f.readline().strip().split(" ")[2:]))  # remove first and last character
         f.readline()  # acc-name (parity max even)
         f.readline()  # Acceptance (priorities Inf Fin ...)
         f.readline()  # properties
@@ -157,7 +157,7 @@ def explicit2symbolic_path(path, manager):
                 state_info = read[7:].split(" ")
                 state_number = int(state_info[0])
                 src_bdd = states[state_number]
-                prios = list(map(lambda x: int(x), state_info[1][1:-1].split(",")))
+                prios = list(map(lambda x_: int(x_), state_info[1][1:-1].split(",")))
                 if dimension == -1:
                     dimension = len(prios)
                     priorities = [defaultdict(lambda: manager.false) for _ in range(dimension)]
