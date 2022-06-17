@@ -21,26 +21,24 @@ This translation from LTL to generalized parity games is done using a modified v
    A description of the partial solvers implemented in SPORE and references to the recursive algorithm for (generalized) parity 
    games can be found in [this paper](https://arxiv.org/abs/1907.06913).
 
-### Full BDD approach
-In order to optimize the practical execution time, the symbolic implementation can be used in another way with a full BDD
-approach, using other tools. The toolchain used by SPORE for the full BDD algorithm is the following:
-1. In `create_parity_automata.sh`, the LTL formulas as [TLSF format](https://arxiv.org/abs/1604.02284) are extracted by
-   using [SyfCo](https://github.com/reactive-systems/syfco). We get the LTL formula as a more common syntax and its input and output atomic propositions.
-2. Still in `create_parity_automata.sh`, the raw LTL formula is sent to [ltl2tgba](https://spot.lrde.epita.fr/ltl2tgba.html),
-   a command from [Spot](https://spot.lrde.epita.fr/). This command generates some deterministic parity automata in a temporary
-   folder `automata/game/`, as [Hanoi Omega-Automata (HOA) format](http://adl.github.io/hoaf/).
+#### Updated full BDD approach
+In order to optimize the practical execution time of SPORE's LTL realizability toolchain, the following updated operations have been introduced to obtain the generalized parity game.
+1. In `create_parity_automata.sh`, the input and output atomic propositions are extracted from the LTL formula in [TLSF format](https://arxiv.org/abs/1604.02284), and this formula is split into sub-formulas using [SyfCo](https://github.com/reactive-systems/syfco).
+2. Each LTL formula is then sent to [ltl2tgba](https://spot.lrde.epita.fr/ltl2tgba.html),
+   a command from [Spot](https://spot.lrde.epita.fr/), which generates a corresponding deterministic parity automaton. These automata are stored in a temporary `automata/game/` folder in the [Hanoi Omega-Automata (HOA) format](http://adl.github.io/hoaf/).
 3. SPORE translates those automata into symbolic parity automata, then computes the product of those automata,
    leading to a single generalized parity automata. It is afterwards translated into a symbolic generalized parity
-   game and the same algorithms to solve generalized parity games to decide whether the input is realizable.
+   game, and the same algorithms used in the previous version of SPORE are used to solve the generalized parity game and decide whether the input formula is realizable.
+   
+The improvement in this updated version, which we call the "full BDD" approach, is therefore to allow for an earlier introduction of BDDs in the LTL to generalized parity game translation, leading to a smaller symbolic representation of this game. in the previous version, the generalized parity game was created explicitely before being translated into a BDD representation.
 
 ## How to use
 * Instructions on how to use and build tlsf2gpg can be found on tlsf2gpg's [repository](https://github.com/gaperez64/tlsf2gpg).  
 * SPORE is written using Python 2.7 and should be fully Python 3 compatible. Dependencies can be found in [requirements.txt](https://github.com/Skar0/spore/blob/master/requirements.txt). Note that `dd` should be compiled with CUDD support.
-* The full BDD approach needs SyfCo, follow the instructions of the [repository](https://github.com/reactive-systems/syfco) to install it.
-* The full BDD approach also needs Spot, more precisely their [ltl2tgba](https://spot.lrde.epita.fr/ltl2tgba.html) command.
-  Instructions on how to compile Spot can be found on the Spot's [website](https://spot.lrde.epita.fr/install.html).
-  If needed, the user can increase the number of acceptance sets used by Spot with `./configure --enable-max-accsets=64`
-  to allow the generation of some additional automata.
+* The full BDD approach requires SyfCo. Instructions on how to install are provided in its [repository](https://github.com/reactive-systems/syfco).
+* The full BDD approach also requires Spot, more precisely the [ltl2tgba](https://spot.lrde.epita.fr/ltl2tgba.html) command.
+  Instructions on how to compile Spot can be found on Spot's [website](https://spot.lrde.epita.fr/install.html).
+  If needed, the user can increase the number of acceptance sets used by Spot using the following option `./configure --enable-max-accsets=64` to allow the generation of some additional automata.
 
 The usage instructions for the standalone SPORE (generalized) parity game solver can be accessed using `python spore.py -h`.
 The command to solve a (generalized) parity game using SPORE is: 
@@ -60,7 +58,7 @@ The following table describes the possible options:
 | -reg           | Use the regular, explicit, implementation of the algorithms.
 | -fbdd          | Use the symbolic implementation of the algorithms, using Binary Decision Diagrams, and in addition, use a symbolic implementation of automata.
 | -dynord        | With -fbdd only, use the dynamic ordering available in dd with CUDD as backend.
-| -arbord        | With -fbdd only, enable an arbitrary ordering of the BDD just before the computation of the product autamaton : (1) state variables, (2) Atomic porpositions, (3) state variable bis.
+| -arbord        | With -fbdd only, enable an arbitrary ordering of the BDD just before the computation of the product autamaton : (1) state variables, (2) atomic porpositions, (3) state variable bis.
 | -rstredge      | With -fbdd only, enable the restriction of edges to reachable vertices, incoming and outgoing, when the symbolic arena is built.
 
 Examples on how to launch both the standalone and toolchain versions of SPORE can be found below.  
@@ -82,7 +80,7 @@ To do so using the explicit implementation of the recursive algorithm:
 
 ### Standalone SPORE -fbdd
 
-With the argument -fbdd, so the full BDD algorithms, the input path must be the file `automata/game/data.txt` that
+With the argument -fbdd, scorresponding to the full BDD approach, the input path must be the file `automata/game/data.txt` that
 contains input and output atomic propositions, and paths to the automata:
 
     python spore.py -gpg -par -fbdd automata/game/data.txt
@@ -90,16 +88,15 @@ contains input and output atomic propositions, and paths to the automata:
 Other parameters such as -dynord, -arbord and -rstredge are also available in this case.
 
 
-### Toolchain for tlsf2gpg
+### Toolchain for tlsf2gpg (regular and BDD approach)
 
-To transform a TLSF file `system.tlsf` into a generalized parity game and decide its realizability using the BDD-based implementation 
-of the combination of the recursive algorithm and a partial solver:
+To transform a TLSF file `system.tlsf` into a generalized parity game and decide its realizability using the BDD-based implementation of the combination of the recursive algorithm and a partial solver:
 
     spore_LTL_toolchain.sh system.tlsf
 
-### Toolchain for SyfCo and ltl2tgba
+### Toolchain for SyfCo and ltl2tgba (full BDD approach)
 
-To transform a TLSF file `system.tlsf` into some parity automata and decide the realizability of the symbolic generalized
+To transform a TLSF file `system.tlsf` into parity automata and decide its realizability using the symbolic generalized
 parity game computed from the product of those symbolic automata, using the BDD-based implementation of the combination
 of the recursive algorithm and a partial solver:
 
@@ -111,6 +108,7 @@ Unit tests can be run using
     python -m unittest discover .
 
 from the root directory of the project.
+
 ## Formats
 
 For the regular and BDD approach, using tlsf2gpg, the `input_path` argument must be the path to a file containing a parity
@@ -124,9 +122,7 @@ Then, in each line describing a vertex, `m` priorities should be specified. Exam
 
 For the full BDD approach, the `input_path` argument must be the path to a file `data.txt` generated by
 `create_parity_automata.sh`. This file contains a list of input atomic propositions as first line, a list of output atomic
-propositions in the second line and then as many lines as there are parity automata generated by `ltl2tgba`, called in `create_parity_automata.sh`.
-Those last lines lead are paths to their respective automaton files.
-
+propositions in the second line, and then as many lines as there are parity automata generated by `ltl2tgba`, which correspond to the paths to their respective automaton files.
 
 Since SPORE is meant to be used for LTL realizability, the output of the tool is `REALIZABLE` if the LTL formula used to
 generate the input game is realizable, and `UNREALIZABLE` if it is not.
@@ -154,6 +150,48 @@ If you use this software for your academic work, please cite the following Reach
   doi       = {10.1007/978-3-030-30806-3\_6},
   timestamp = {Mon, 09 Sep 2019 15:37:02 +0200},
   biburl    = {https://dblp.org/rec/conf/rp/BruyerePRT19.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+```
+
+Alternatively, SPORE is also featured in the report concerning the reactive synthesis competition:
+```
+@article{DBLP:journals/corr/abs-2206-00251,
+  author    = {Swen Jacobs and
+               Guillermo A. P{\'{e}}rez and
+               Remco Abraham and
+               V{\'{e}}ronique Bruy{\`{e}}re and
+               Micha{\"{e}}l Cadilhac and
+               Maximilien Colange and
+               Charly Delfosse and
+               Tom van Dijk and
+               Alexandre Duret{-}Lutz and
+               Peter Faymonville and
+               Bernd Finkbeiner and
+               Ayrat Khalimov and
+               Felix Klein and
+               Michael Luttenberger and
+               Klara J. Meyer and
+               Thibaud Michaud and
+               Adrien Pommellet and
+               Florian Renkin and
+               Philipp Schlehuber{-}Caissier and
+               Mouhammad Sakr and
+               Salomon Sickert and
+               Ga{\"{e}}tan Staquet and
+               Clement Tamines and
+               Leander Tentrup and
+               Adam Walker},
+  title     = {The Reactive Synthesis Competition {(SYNTCOMP):} 2018-2021},
+  journal   = {CoRR},
+  volume    = {abs/2206.00251},
+  year      = {2022},
+  url       = {https://doi.org/10.48550/arXiv.2206.00251},
+  doi       = {10.48550/arXiv.2206.00251},
+  eprinttype = {arXiv},
+  eprint    = {2206.00251},
+  timestamp = {Mon, 13 Jun 2022 15:31:50 +0200},
+  biburl    = {https://dblp.org/rec/journals/corr/abs-2206-00251.bib},
   bibsource = {dblp computer science bibliography, https://dblp.org}
 }
 ```
