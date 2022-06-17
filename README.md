@@ -28,7 +28,7 @@ approach, using other tools. The toolchain used by SPORE for the full BDD algori
    using [SyfCo](https://github.com/reactive-systems/syfco). We get the LTL formula as a more common syntax and its input and output atomic propositions.
 2. Still in `create_parity_automata.sh`, the raw LTL formula is sent to [ltl2tgba](https://spot.lrde.epita.fr/ltl2tgba.html),
    a command from [Spot](https://spot.lrde.epita.fr/). This command generates some deterministic parity automata in a temporary
-   folder `automata/game/`.
+   folder `automata/game/`, as [Hanoi Omega-Automata (HOA) format](http://adl.github.io/hoaf/).
 3. SPORE translates those automata into symbolic parity automata, then computes the product of those automata,
    leading to a single generalized parity automata. It is afterwards translated into a symbolic generalized parity
    game and the same algorithms to solve generalized parity games to decide whether the input is realizable.
