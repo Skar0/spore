@@ -88,17 +88,17 @@ if __name__ == '__main__':
 
     reordering_group = parser.add_mutually_exclusive_group(required=False)
 
-    reordering_group.add_argument('-dynord', '--dynamic_ordering',
+    reordering_group.add_argument('-dynord',
                         action='store_true',
                         help='With -fbdd only, use the dynamic ordering available in dd with CUDD as backend.')
 
-    reordering_group.add_argument('-arbord', '--arbitrary_ordering',
+    reordering_group.add_argument('-arbord',
                         action='store_true',
                         help='With -fbdd only, enable an arbitrary ordering of the BDD just'
                              'before the computation of the product autamaton :'
                              '(1) state variables, (2) Atomic porpositions, (3) state variable bis.')
 
-    parser.add_argument('-rstredge', '--restrict_reach_edges',
+    parser.add_argument('-rstredge',
                         action='store_true',
                         help='With -fbdd only, enable the restriction of edges to reachable'
                              'vertices, incoming and outgoing, when the symbolic arena is built.')
@@ -110,7 +110,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # Checking if some options of -fbdd are used without -fbdd
-
     if (args.dynord or args.arbord or args.rstredge) and not args.fbdd:
         parser.error("-dynord, -arbord and -rstredge require -fbdd.")
 
@@ -192,7 +191,7 @@ if __name__ == '__main__':
         elif args.fbdd:
 
             manager = _bdd.BDD()
-            manager.configure(reordering=args.dynamic_ordering)
+            manager.configure(reordering=args.dynord)
 
             input_signals, output_signals, automata_paths = decomp_data_file(args.input_path)
 
@@ -201,7 +200,7 @@ if __name__ == '__main__':
 
             automata = [explicit2symbolic_path(path, manager) for path in automata_paths]
 
-            if args.arbitrary_ordering:
+            if args.arbord:
                 nb_total_var = sum(map(lambda a: len(a.vars), automata))
                 new_order = dict()
                 i = 0
@@ -221,7 +220,7 @@ if __name__ == '__main__':
             product = reduce(lambda a1, a2: a1.product(a2, manager), automata)
 
             arena, init = symb_dpa2gpg(product, input_signals, output_signals,
-                                       manager, restrict_reach_edges=args.restrict_reach_edges)
+                                       manager, restrict_reach_edges=args.rstredge)
 
             if args.rec:
                 winning_region_player0, winning_region_player1 = \
