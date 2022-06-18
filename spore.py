@@ -86,11 +86,13 @@ if __name__ == '__main__':
                                 'using Binary Decision Diagrams, and in addition, '
                                 'use a symbolic implementation of automata.')
 
-    parser.add_argument('-dynord', '--dynamic_ordering',
+    reordering_group = parser.add_mutually_exclusive_group(required=False)
+
+    reordering_group.add_argument('-dynord', '--dynamic_ordering',
                         action='store_true',
                         help='With -fbdd only, use the dynamic ordering available in dd with CUDD as backend.')
 
-    parser.add_argument('-arbord', '--arbitrary_ordering',
+    reordering_group.add_argument('-arbord', '--arbitrary_ordering',
                         action='store_true',
                         help='With -fbdd only, enable an arbitrary ordering of the BDD just'
                              'before the computation of the product autamaton :'
@@ -102,9 +104,15 @@ if __name__ == '__main__':
                              'vertices, incoming and outgoing, when the symbolic arena is built.')
 
     parser.add_argument('input_path', type=str, help='The path to the file containing the game in '
-                                                     '(extended) PGSolver format')
+                                                     '(extended) PGSolver format or the path to the file containing'
+                                                     'the path to the automatas for -fbdd.')
 
     args = parser.parse_args()
+
+    # Checking if some options of -fbdd are used without -fbdd
+
+    if (args.dynord or args.arbord or args.rstredge) and not args.fbdd:
+        parser.error("-dynord, -arbord and -rstredge require -fbdd.")
 
     if args.pg:
 
