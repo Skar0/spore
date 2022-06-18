@@ -23,14 +23,14 @@ This translation from LTL to generalized parity games is done using a modified v
 
 #### Updated full BDD approach
 In order to optimize the practical execution time of SPORE's LTL realizability toolchain, the following updated operations have been introduced to obtain the generalized parity game.
-1. In `create_parity_automata.sh`, the input and output atomic propositions are extracted from the LTL formula in [TLSF format](https://arxiv.org/abs/1604.02284), and this formula is split into sub-formulas using [SyfCo](https://github.com/reactive-systems/syfco).
-2. Each LTL formula is then sent to [ltl2tgba](https://spot.lrde.epita.fr/ltl2tgba.html),
+1. The script `scripts/create_parity_automata.sh` extracts the input and output atomic propositions from the LTL formula in [TLSF format](https://arxiv.org/abs/1604.02284) and splits it into sub-formulas using [SyfCo](https://github.com/reactive-systems/syfco).
+2. Every LTL formula is then sent to [ltl2tgba](https://spot.lrde.epita.fr/ltl2tgba.html),
    a command from [Spot](https://spot.lrde.epita.fr/), which generates a corresponding deterministic parity automaton. These automata are stored in a temporary `automata/game/` folder in the [Hanoi Omega-Automata (HOA) format](http://adl.github.io/hoaf/).
 3. SPORE translates those automata into symbolic parity automata, then computes the product of those automata,
    leading to a single generalized parity automata. It is afterwards translated into a symbolic generalized parity
-   game, and the same algorithms used in the previous version of SPORE are used to solve the generalized parity game and decide whether the input formula is realizable.
+   game, and the same algorithms introduced in the regular version of SPORE are used to solve the generalized parity game and decide whether the input formula is realizable.
    
-The improvement in this updated version, which we call the "full BDD" approach, is therefore to allow for an earlier introduction of BDDs in the LTL to generalized parity game translation, leading to a smaller symbolic representation of this game. in the previous version, the generalized parity game was created explicitely before being translated into a BDD representation.
+The improvement in this updated version, which we call the "full BDD" approach, is therefore to allow for an earlier introduction of BDDs in the LTL to generalized parity game translation, leading to a smaller symbolic representation of this game. In the regular version, the generalized parity game was created explicitely before being translated into a BDD representation.
 
 ## How to use
 * Instructions on how to use and build tlsf2gpg can be found on tlsf2gpg's [repository](https://github.com/gaperez64/tlsf2gpg).  
@@ -43,23 +43,23 @@ The improvement in this updated version, which we call the "full BDD" approach, 
 The usage instructions for the standalone SPORE (generalized) parity game solver can be accessed using `python spore.py -h`.
 The command to solve a (generalized) parity game using SPORE is: 
 
-    python spore.py (-pg | -gpg) [-par | -snl | -rec] [-bdd | -reg | -fbdd] [-dynord] [-arbord] [-rstredge] input_path
+    python spore.py (-pg | -gpg) [-par | -snl | -rec] [-bdd | -reg | -fbdd] [-dynord | -arbord] [-rstredge] input_path
 
 The following table describes the possible options:
 
-| Option         | Description   
-| :------------- |:-------------
-| -pg            | Load a parity game (must be in PGSolver format).
-| -gpg           | Load a generalized parity game (must be in extended PGSolver format).       
-| -par           | Use the combination of the recursive algorithm with a partial solver to solve the game (default).
-| -snl           | Perform a single call to the partial solver and use the recursive algorithm to solve the remaining game.
-| -rec           | Use the recursive algorithm to solve the game.
-| -bdd           | Use the symbolic implementation of the algorithms, using Binary Decision Diagrams (default).
-| -reg           | Use the regular, explicit, implementation of the algorithms.
-| -fbdd          | Use the symbolic implementation of the algorithms, using Binary Decision Diagrams, and in addition, use a symbolic implementation of automata.
-| -dynord        | With -fbdd only, use the dynamic ordering available in dd with CUDD as backend.
-| -arbord        | With -fbdd only, enable an arbitrary ordering of the BDD just before the computation of the product autamaton : (1) state variables, (2) atomic porpositions, (3) state variable bis.
-| -rstredge      | With -fbdd only, enable the restriction of edges to reachable vertices, incoming and outgoing, when the symbolic arena is built.
+| Option            | Description   
+| :---------------- |:-----------
+| -pg               | Load a parity game (must be in PGSolver format).
+| -gpg              | Load a generalized parity game (must be in extended PGSolver format).       
+| -par              | Use the combination of the recursive algorithm with a partial solver to solve the game (default).
+| -snl              | Perform a single call to the partial solver and use the recursive algorithm to solve the remaining game.
+| -rec              | Use the recursive algorithm to solve the game.
+| -bdd              | Use the symbolic implementation of the algorithms, using Binary Decision Diagrams (default).
+| -reg              | Use the regular, explicit, implementation of the algorithms.
+| -fbdd             | Use the full BDD approach consisting of the symbolic implementation of the algorithms, using Binary Decision Diagrams, and in addition, use a symbolic implementation of automata.
+| -dynord           | With -fbdd only, use the dynamic ordering available in dd with CUDD as backend.
+| -arbord           | With -fbdd only, enable an arbitrary ordering of the BDD just before the computation of the product autamaton : (1) state variables, (2) atomic porpositions, (3) state variable bis.
+| -rstredge &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; | With -fbdd only, enable the restriction of edges to reachable vertices, incoming and outgoing, when the symbolic arena is built.
 
 Examples on how to launch both the standalone and toolchain versions of SPORE can be found below.  
 
@@ -92,7 +92,7 @@ Other parameters such as -dynord, -arbord and -rstredge are also available in th
 
 To transform a TLSF file `system.tlsf` into a generalized parity game and decide its realizability using the BDD-based implementation of the combination of the recursive algorithm and a partial solver:
 
-    spore_LTL_toolchain.sh system.tlsf
+    ./scipts/spore_LTL_toolchain.sh system.tlsf
 
 ### Toolchain for SyfCo and ltl2tgba (full BDD approach)
 
@@ -100,7 +100,7 @@ To transform a TLSF file `system.tlsf` into parity automata and decide its reali
 parity game computed from the product of those symbolic automata, using the BDD-based implementation of the combination
 of the recursive algorithm and a partial solver:
 
-    spore_LTL_toolchain_fbdd.sh system.tlsf
+    ./scripts/spore_LTL_toolchain_fbdd.sh system.tlsf
 
 ### Tests
 Unit tests can be run using
@@ -118,7 +118,6 @@ The extended PGSolver format follows the same format as PGSolver for
 vertices and successors, with two changes. First, the first line of the file must be of the form `generalized-parity n m;` 
 where `n` is the maximal index used for the vertices (as in the original format) and `m` is the number of priority functions.
 Then, in each line describing a vertex, `m` priorities should be specified. Examples can be found in the `arenas/gpg/` directory.
-
 
 For the full BDD approach, the `input_path` argument must be the path to a file `data.txt` generated by
 `create_parity_automata.sh`. This file contains a list of input atomic propositions as first line, a list of output atomic
