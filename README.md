@@ -47,19 +47,19 @@ The command to solve a (generalized) parity game using SPORE is:
 
 The following table describes the possible options:
 
-| Option         | Description   
-| :------------- |:-------------
-| -pg            | Load a parity game (must be in PGSolver format).
-| -gpg           | Load a generalized parity game (must be in extended PGSolver format).       
-| -par           | Use the combination of the recursive algorithm with a partial solver to solve the game (default).
-| -snl           | Perform a single call to the partial solver and use the recursive algorithm to solve the remaining game.
-| -rec           | Use the recursive algorithm to solve the game.
-| -bdd           | Use the symbolic implementation of the algorithms, using Binary Decision Diagrams (default).
-| -reg           | Use the regular, explicit, implementation of the algorithms.
-| -fbdd          | Use the full BDD approach consisting of the symbolic implementation of the algorithms, using Binary Decision Diagrams, and in addition, use a symbolic implementation of automata.
-| -dynord        | With -fbdd only, use the dynamic ordering available in dd with CUDD as backend.
-| -arbord        | With -fbdd only, enable an arbitrary ordering of the BDD just before the computation of the product autamaton : (1) state variables, (2) atomic porpositions, (3) state variable bis.
-| -rstredge      | With -fbdd only, enable the restriction of edges to reachable vertices, incoming and outgoing, when the symbolic arena is built.
+| Option            | Description   
+| :---------------- |:-----------
+| -pg               | Load a parity game (must be in PGSolver format).
+| -gpg              | Load a generalized parity game (must be in extended PGSolver format).       
+| -par              | Use the combination of the recursive algorithm with a partial solver to solve the game (default).
+| -snl              | Perform a single call to the partial solver and use the recursive algorithm to solve the remaining game.
+| -rec              | Use the recursive algorithm to solve the game.
+| -bdd              | Use the symbolic implementation of the algorithms, using Binary Decision Diagrams (default).
+| -reg              | Use the regular, explicit, implementation of the algorithms.
+| -fbdd             | Use the full BDD approach consisting of the symbolic implementation of the algorithms, using Binary Decision Diagrams, and in addition, use a symbolic implementation of automata.
+| -dynord           | With -fbdd only, use the dynamic ordering available in dd with CUDD as backend.
+| -arbord           | With -fbdd only, enable an arbitrary ordering of the BDD just before the computation of the product autamaton : (1) state variables, (2) atomic porpositions, (3) state variable bis.
+| -rstredge         | With -fbdd only, enable the restriction of edges to reachable vertices, incoming and outgoing, when the symbolic arena is built.
 
 Examples on how to launch both the standalone and toolchain versions of SPORE can be found below.  
 
