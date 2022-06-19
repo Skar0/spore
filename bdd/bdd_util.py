@@ -185,7 +185,7 @@ def print_automaton_info(aut, manager):
                 aut.priorities):
             print(">> dimension =", i)
             for prio, state in dim.items():
-                print("  priorité", prio, ":", get_model_list(state, aut.vars))
+                print("  priority", prio, ":", get_model_list(state, aut.vars))
             i += 1
 
 
