@@ -6,8 +6,8 @@ if [ ! -f $1 ]; then
 fi
 
 # change here path to the right folders
-syfcopath="/home/christophe/.local/bin"
-ltl2tgbapath="/home/christophe/.local/bin"
+syfcopath="."
+ltl2tgbapath="."
 tempfolder="automata"
 name="spec"
 if [[ $# -ge 2 ]]; then
