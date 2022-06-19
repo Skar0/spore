@@ -30,7 +30,7 @@ In order to optimize the practical execution time of SPORE's LTL realizability t
    leading to a single generalized parity automata. It is afterwards translated into a symbolic generalized parity
    game, and the same algorithms introduced in the regular version of SPORE are used to solve the generalized parity game and decide whether the input formula is realizable.
    
-The improvement in this updated version, which we call the "full BDD" approach, is therefore to allow for an earlier introduction of BDDs in the LTL to generalized parity game translation, leading to a smaller symbolic representation of this game. In the regular version, the generalized parity game was created explicitely before being translated into a BDD representation.
+The improvement in this updated version, which we call the "full BDD" approach, is therefore to allow for an earlier introduction of BDDs in the LTL to generalized parity game translation, leading to a smaller symbolic representation of this game. In the regular version, the generalized parity game was created explicitly before being translated into a BDD representation.
 
 ## How to use
 * Instructions on how to use and build tlsf2gpg can be found on tlsf2gpg's [repository](https://github.com/gaperez64/tlsf2gpg).  
@@ -58,7 +58,7 @@ The following table describes the possible options:
 | -reg              | Use the regular, explicit, implementation of the algorithms.
 | -fbdd             | Use the full BDD approach consisting of the symbolic implementation of the algorithms, using Binary Decision Diagrams, and in addition, use a symbolic implementation of automata.
 | -dynord           | With -fbdd only, use the dynamic ordering available in dd with CUDD as backend.
-| -arbord           | With -fbdd only, enable an arbitrary ordering of the BDD just before the computation of the product autamaton : (1) state variables, (2) atomic porpositions, (3) state variable bis.
+| -arbord           | With -fbdd only, enable an arbitrary ordering of the BDD just before the computation of the product automaton : (1) state variables, (2) atomic propositions, (3) state variable bis.
 | -rstredge &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; | With -fbdd only, enable the restriction of edges to reachable vertices, incoming and outgoing, when the symbolic arena is built.
 
 Examples on how to launch both the standalone and toolchain versions of SPORE can be found below.  
@@ -80,7 +80,7 @@ To do so using the explicit implementation of the recursive algorithm:
 
 ### Standalone SPORE -fbdd
 
-With the argument -fbdd, scorresponding to the full BDD approach, the input path must be the file `automata/game/data.txt` that
+With the argument -fbdd, corresponding to the full BDD approach, the input path must be the file `automata/game/data.txt` that
 contains input and output atomic propositions, and paths to the automata:
 
     python spore.py -gpg -par -fbdd automata/game/data.txt
@@ -92,7 +92,7 @@ Other parameters such as -dynord, -arbord and -rstredge are also available in th
 
 To transform a TLSF file `system.tlsf` into a generalized parity game and decide its realizability using the BDD-based implementation of the combination of the recursive algorithm and a partial solver:
 
-    ./scipts/spore_LTL_toolchain.sh system.tlsf
+    ./scripts/spore_LTL_toolchain.sh system.tlsf
 
 ### Toolchain for SyfCo and ltl2tgba (full BDD approach)
 
