@@ -86,13 +86,11 @@ if __name__ == '__main__':
                                 'using Binary Decision Diagrams, and in addition, '
                                 'use a symbolic implementation of automata.')
 
-    reordering_group = parser.add_mutually_exclusive_group(required=False)
-
-    reordering_group.add_argument('-dynord',
+    parser.add_argument('-dynord',
                         action='store_true',
                         help='With -fbdd only, use the dynamic ordering available in dd with CUDD as backend.')
 
-    reordering_group.add_argument('-arbord',
+    parser.add_argument('-arbord',
                         action='store_true',
                         help='With -fbdd only, enable an arbitrary ordering of the BDD just'
                              'before the computation of the product autamaton :'
