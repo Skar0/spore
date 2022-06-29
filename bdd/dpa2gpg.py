@@ -32,7 +32,9 @@ def symb_dpa2gpg(aut, ap_inpt, ap_oupt, manager, restrict_reach_edges=False):
     mapping_bis = dict(zip(vars, vars_bis))
     inv_mapping_bis = dict(zip(vars_bis, vars))
 
-    manager.declare(*all_vars)
+    # other variable are already declared
+    manager.declare(*ap_inpt_bis)
+    manager.declare('i', 'ib')
 
     nbr_vertices = aut.nbr_vertices * (1 + int(math.pow(2, len(ap_inpt))))
     nbr_digits_vertices = len(bin(nbr_vertices - 1)) - 2
@@ -52,7 +54,7 @@ def symb_dpa2gpg(aut, ap_inpt, ap_oupt, manager, restrict_reach_edges=False):
     # - states variables of automaton are unchanged, it's the system that changes that (q1 <=> q1" & q2 <=> q2" & ...)
     # - always starts with variable of environment to false (!a1 & !a2 ...)
     edges_env = ~vari & varib & reduce(and_iter, [~manager.var(a) for a in ap_inpt]) \
-                & reduce(and_iter, [manager.var(q).equiv(manager.var(qb)) for q, qb in zip(aut.vars, aut.vars_bis)])
+              & reduce(and_iter, [manager.var(q).equiv(manager.var(qb)) for q, qb in zip(aut.vars, aut.vars_bis)])
 
     # Transitions controlled by the system is a conjunction :
     # - from intermediate states to a non-intermediate state (i & !i")
@@ -63,7 +65,7 @@ def symb_dpa2gpg(aut, ap_inpt, ap_oupt, manager, restrict_reach_edges=False):
     #   Rename in dpa transition a -> a' as these state variables hold the environment's assignment of its atomic
     #   propositions. We also remove labels of ap_output to ignore them, with "exist".
     edges_sys = vari & ~varib & manager.exist(ap_oupt, aut.transitions) \
-                & reduce(and_iter, [~manager.var(ax) for ax in ap_inpt_bis])
+                     & reduce(and_iter, [~manager.var(ax) for ax in ap_inpt_bis])
 
     # Edges of arena is edges of system and edges of environment
     edges = edges_sys | edges_env

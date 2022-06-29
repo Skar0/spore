@@ -1,23 +1,16 @@
 import sys
-from functools import reduce
 
 import dd.cudd as _bdd
-
-import regular.pg2arena as reg_pg_loader
-import regular.recursive as reg_pg_recursive
 
 import regular.gpg2arena as reg_gpg_loader
 import regular.generalizedRecursive as reg_gpg_recursive
 
-import bdd.pg2bdd as bdd_pg_loader
-import bdd.recursive as bdd_pg_recursive
-
 import bdd.gpg2bdd as bdd_gpg_loader
 import bdd.generalizedRecursive as bdd_gpg_recursive
 
-from bdd.dpa2bdd import explicit2symbolic_path
+from bdd.dpa2bdd import get_product_automaton
 from bdd.dpa2gpg import symb_dpa2gpg
-from bdd.bdd_util import decomp_data_file, x, xb
+from bdd.bdd_util import decomp_data_file
 
 
 # Increase the recursion limit to avoid error when we read a long label with explicit2symbolic_path
@@ -138,27 +131,11 @@ def construct_full_bdd_arena(data_path, dynamic_reordering=True, arbitrary_reord
     manager.declare(*input_signals, *output_signals)
     manager.configure(reordering=dynamic_reordering)
 
-    automata = [explicit2symbolic_path(path_, manager) for path_ in automata_paths]
+    product = get_product_automaton(automata_paths, manager, arbitrary_reordering=arbitrary_reordering,
+                                    aps=input_signals + output_signals)
 
-    if arbitrary_reordering:
-        nb_total_var = sum(map(lambda a: len(a.vars), automata))
-        new_order = dict()
-        i = 0
-        for var in input_signals+output_signals:
-            new_order[var] = i
-            i += 1
-        for var in range(nb_total_var):
-            manager.declare(x(var))
-            new_order[x(var)] = i
-            i += 1
-        for var in range(nb_total_var):
-            manager.declare(xb(var))
-            new_order[xb(var)] = i
-            i += 1
-        _bdd.reorder(manager, new_order)
-
-    product = reduce(lambda a1, a2: a1.product(a2, manager), automata)
     arena, init = symb_dpa2gpg(product, input_signals, output_signals, manager)
+
     return manager, arena, init
 
 

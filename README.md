@@ -43,7 +43,7 @@ The improvement in this updated version, which we call the "full BDD" approach, 
 The usage instructions for the standalone SPORE (generalized) parity game solver can be accessed using `python spore.py -h`.
 The command to solve a (generalized) parity game using SPORE is: 
 
-    python spore.py (-pg | -gpg) [-par | -snl | -rec] [-bdd | -reg | -fbdd] [-dynord | -arbord] [-rstredge] input_path
+    python spore.py (-pg | -gpg) [-par | -snl | -rec] [-bdd | -reg | -fbdd] [-dynord] [-arbord] [-rstredge] input_path
 
 The following table describes the possible options:
 

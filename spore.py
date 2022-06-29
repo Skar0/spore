@@ -17,7 +17,6 @@
 
 import argparse
 import sys
-from functools import reduce
 
 import dd.cudd as _bdd
 
@@ -33,8 +32,8 @@ import bdd.gpg2bdd as bdd_gen_loader
 import regular.generalizedRecursive
 import regular.gpg2arena as reg_gen_loader
 
-from bdd.bdd_util import decomp_data_file, x, xb
-from bdd.dpa2bdd import explicit2symbolic_path
+from bdd.bdd_util import decomp_data_file
+from bdd.dpa2bdd import get_product_automaton
 from bdd.dpa2gpg import symb_dpa2gpg
 
 # Increase the recursion limit to avoid error when we read a long label with explicit2symbolic_path
@@ -196,26 +195,8 @@ if __name__ == '__main__':
             manager.declare(*input_signals)
             manager.declare(*output_signals)
 
-            automata = [explicit2symbolic_path(path, manager) for path in automata_paths]
-
-            if args.arbord:
-                nb_total_var = sum(map(lambda a: len(a.vars), automata))
-                new_order = dict()
-                i = 0
-                for var in input_signals + output_signals:
-                    new_order[var] = i
-                    i += 1
-                for var in range(nb_total_var):
-                    manager.declare(x(var))
-                    new_order[x(var)] = i
-                    i += 1
-                for var in range(nb_total_var):
-                    manager.declare(xb(var))
-                    new_order[xb(var)] = i
-                    i += 1
-                _bdd.reorder(manager, new_order)
-
-            product = reduce(lambda a1, a2: a1.product(a2, manager), automata)
+            product = get_product_automaton(automata_paths, manager, arbitrary_reordering=args.arbord,
+                                            aps=input_signals + output_signals)
 
             arena, init = symb_dpa2gpg(product, input_signals, output_signals,
                                        manager, restrict_reach_edges=args.rstredge)

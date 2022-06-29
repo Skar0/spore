@@ -1,3 +1,5 @@
+import dd.cudd as _bdd
+
 import copy
 from functools import reduce
 
@@ -17,6 +19,12 @@ def decomp_data_file(path):
     path file to the automaton 1
     path file to the automaton 2
     ...
+
+    :param path: the path to the data.txt of the automaton
+    :type path: str
+    :return: a 3-tuple of list of strings, the first list contains input atomic propositions, the second one is for
+             output APs and the last element if a list of paths to all .hoaf automata.
+    :rtype: tuple[list]
     """
 
     automata_path = []
@@ -33,6 +41,51 @@ def decomp_data_file(path):
             automata_path.append(formula.rstrip())
 
     return input_signals, output_signals, automata_path
+
+
+def arbitrary_reorder(nbr_var, aps, manager, declare=True):
+    """
+    Reorder the BDD to an arbitrary order besides the dynamic reordering. The new order is :
+    (1) variable states, (2) atomic propositions, (3) successor variable state.
+
+    In his master thesis, Remco Abraham took the following arbitrary order (without dynamic) :
+    (1) APs, (2) current state, (3) successor state, but experimental results showed that our reorder is slightly
+    better. However without the dynamic reordering of dd, results are not good at all, we get more timeouts, more
+    errors (see report of SPORE for SYNTCOMP 2022).
+
+    TODO: Maybe a reordering like this can be done after the computation of the symbolic arena ? Some tests showed that
+          it is not that efficient but these tests do not stand in the report, it was fast checks on some benchmarks.
+
+    :param nbr_var: the number of variable to reorder starting from x0 to x{nbr_var}.
+    :type nbr_var: int
+    :param aps: a list of all atomic propositions
+    :type aps: list[str]
+    :param manager: the BDD manager
+    :type manager: dd.cudd.BDD
+    :return: a symbolic DPA object that represents the product automaton
+    :rtype: SymbolicGenDPA
+    """
+    new_order = dict()
+    i = 0
+
+    # (1) variable states
+    for var in range(nbr_var):
+        if declare:
+            manager.declare(x(var))
+        new_order[x(var)] = i
+        i += 1
+    # (2) atomic propositions
+    for var in aps:
+        new_order[var] = i
+        i += 1
+    # (3) successor variable state.
+    for var in range(nbr_var):
+        if declare:
+            manager.declare(xb(var))
+        new_order[xb(var)] = i
+        i += 1
+
+    _bdd.reorder(manager, new_order)
 
 
 def merge_two_dicts(d1, d2):
@@ -85,7 +138,7 @@ def reachable_states(init, transitions, vars, inv_mapping_bis, ap, manager):
     return states
 
 
-def build_symbolic_equal(node, nbr_digit_vertices, manager):
+def build_symbolic_equal(node, nbr_digit_vertices, manager, digit_offset=0):
     """
     Construct a boolean expression over n variables {x0, ... xn} that is true iff those variables are replaced by
     digits of the node.
@@ -95,13 +148,18 @@ def build_symbolic_equal(node, nbr_digit_vertices, manager):
     :type nbr_digit_vertices: int
     :param manager: the BDD manager
     :type manager: dd.cudd.BDD
+    :param digit_offset: the offset of the number of digit, the variable used here starts from digit_offset to
+                         nbr_digit_vertices+digit_offset. Default to 0.
+    :type digit_offset: int
     :return: a boolean expression that only represents the given node
     :rtype: dd.cudd.Function
     """
 
-    # use more digits if needed to keep every variables
+    # use more digits if needed to keep every variable
     binary = format(node, "0" + str(nbr_digit_vertices) + "b")
-    var_x = lambda k: manager.var(x(k))
+
+    def var_x(k):
+        return manager.var(x(k + digit_offset))
 
     # use n-k-1 to keep order, x0: 1st digit, ... and not xn: 1st digit
     return reduce(and_iter,
@@ -140,7 +198,7 @@ def get_model_list(models, vars, vars_bis=None):
 
 def get_model(dic, vars, vars_bis=None):
     """
-    for debug purpose : takes a dict resulting of a SATany and returns a string
+    for debug purpose : takes a dict resulting of a "SATany" and returns a string
     """
 
     if vars_bis is None:

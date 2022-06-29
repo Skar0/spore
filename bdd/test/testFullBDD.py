@@ -1,10 +1,9 @@
 import unittest
-from functools import reduce
 
 import dd.cudd as bdd
 
 from bdd.bdd_util import decomp_data_file
-from bdd.dpa2bdd import explicit2symbolic_path
+from bdd.dpa2bdd import get_product_automaton
 from bdd.dpa2gpg import symb_dpa2gpg
 from bdd.generalizedRecursive import generalized_recursive
 from bdd.misc import bdd2int
@@ -17,9 +16,7 @@ def get_winning_regions(file):
     manager.declare(*input_signals)
     manager.declare(*output_signals)
 
-    automata = [explicit2symbolic_path(path, manager) for path in automata_paths]
-
-    product = reduce(lambda a1, a2: a1.product(a2, manager), automata)
+    product = get_product_automaton(automata_paths, manager)
 
     arena, init = symb_dpa2gpg(product, input_signals, output_signals, manager)
 

@@ -89,7 +89,7 @@ class Arena:
     def restrict_to_reachable_states(self, init_state, manager, restrict_reach_edges=False, mapping_bis=None):
         """
         Restrict the current arena to reachable states only, for vertices controlled by players and priorities.
-        Field nbr_vertices can become incorrect !
+        Field nbr_vertices can become incorrect but stays an upper bound of the real number of vertices.
         :param init_state: the initial state as boolean expression
         :type init_state: dd.cudd.Function
         :param manager: the BDD manager
@@ -108,9 +108,11 @@ class Arena:
         self.player0_vertices &= reach_states
         self.player1_vertices &= reach_states
 
-        # No need to modify edges if we just restrict vertices
-        # TODO: is the following code needed ? What is the impact on the computation time ?
+        # TODO: Is the restriction on edges too needed ? What is the impact on the computation time ? Experimental
+        #       results showed that doing this makes the solver faster for smaller arenas but it produces a little more
+        #       timeouts when the arena grows (see report of SPORE for SYNTCOMP 2022).
         if restrict_reach_edges:
+            # No need to modify edges if we just restrict vertices, but this may impact performances.
             self.edges &= reach_states & manager.let(mapping_bis, reach_states)
 
         new_priorities = []
