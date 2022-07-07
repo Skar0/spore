@@ -38,7 +38,6 @@ def symb_dpa2gpg(aut, ap_inpt, ap_oupt, manager, restrict_reach_edges=False):
 
     nbr_vertices = aut.nbr_vertices * (1 + int(math.pow(2, len(ap_inpt))))
     nbr_digits_vertices = len(bin(nbr_vertices - 1)) - 2
-    dimension = aut.dimension
 
     vari = manager.var("i")
     varib = manager.var("ib")
@@ -87,7 +86,7 @@ def symb_dpa2gpg(aut, ap_inpt, ap_oupt, manager, restrict_reach_edges=False):
 
     arena.nbr_vertices = nbr_vertices
     arena.nbr_digits_vertices = nbr_digits_vertices
-    arena.nbr_functions = dimension
+    arena.nbr_functions = aut.dimension
 
     arena.player0_vertices = sys_vertices
     arena.player1_vertices = env_vertices

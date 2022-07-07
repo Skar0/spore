@@ -43,7 +43,7 @@ The improvement in this updated version, which we call the "full BDD" approach, 
 The usage instructions for the standalone SPORE (generalized) parity game solver can be accessed using `python spore.py -h`.
 The command to solve a (generalized) parity game using SPORE is: 
 
-    python spore.py (-pg | -gpg) [-par | -snl | -rec] [-bdd | -reg | -fbdd] [-dynord] [-arbord] [-rstredge] input_path
+    python spore.py (-pg | -gpg) [-par | -snl | -rec] [-bdd | -reg | -fbdd] [-dynord] [-arbord] [-rstredge] [-noremap] input_path
 
 The following table describes the possible options:
 
@@ -60,6 +60,7 @@ The following table describes the possible options:
 | -dynord           | With -fbdd only, use the dynamic ordering available in dd with CUDD as backend.
 | -arbord           | With -fbdd only, enable an arbitrary ordering of the BDD just before the computation of the product automaton : (1) state variables, (2) atomic propositions, (3) state variable bis.
 | -rstredge &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; | With -fbdd only, enable the restriction of edges to reachable vertices, incoming and outgoing, when the symbolic arena is built.
+| -noremap          | With -fbdd only, do not remap the BDD variables of automata when the product is computed but instead, each automaton is created with new variables.
 
 Examples on how to launch both the standalone and toolchain versions of SPORE can be found below.  
 

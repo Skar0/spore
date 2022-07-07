@@ -100,6 +100,11 @@ if __name__ == '__main__':
                         help='With -fbdd only, enable the restriction of edges to reachable'
                              'vertices, incoming and outgoing, when the symbolic arena is built.')
 
+    parser.add_argument('-noremap',
+                        action='store_true',
+                        help='With -fbdd only, do not remap the BDD variables of automata when the product'
+                             'is computed but instead, each automaton is created with new variables.')
+
     parser.add_argument('input_path', type=str, help='The path to the file containing the game in '
                                                      '(extended) PGSolver format or the path to the file containing'
                                                      'the path to the automatas for -fbdd.')
@@ -130,11 +135,6 @@ if __name__ == '__main__':
 
             vertex_0_won_by_player0 = 0 in winning_region_player0
 
-            if vertex_0_won_by_player0:
-                print("REALIZABLE")
-            else:
-                print("UNREALIZABLE")
-
         else:  # if args.bdd or default
 
             manager = _bdd.BDD()
@@ -154,11 +154,6 @@ if __name__ == '__main__':
 
             vertex_0_dict_rep = next(manager.pick_iter(all_vertices[0]))
             vertex_0_won_by_player0 = manager.let(vertex_0_dict_rep, winning_region_player0) == manager.true
-
-            if vertex_0_won_by_player0:
-                print("REALIZABLE")
-            else:
-                print("UNREALIZABLE")
 
     if args.gpg:
 
@@ -180,11 +175,6 @@ if __name__ == '__main__':
 
             vertex_0_won_by_player0 = 0 in winning_region_player0
 
-            if vertex_0_won_by_player0:
-                print("REALIZABLE")
-            else:
-                print("UNREALIZABLE")
-
         elif args.fbdd:
 
             manager = _bdd.BDD()
@@ -196,30 +186,35 @@ if __name__ == '__main__':
             manager.declare(*output_signals)
 
             product = get_product_automaton(automata_paths, manager, arbitrary_reordering=args.arbord,
-                                            aps=input_signals + output_signals)
+                                            aps=input_signals + output_signals, remap=not args.noremap)
 
             arena, init = symb_dpa2gpg(product, input_signals, output_signals,
                                        manager, restrict_reach_edges=args.rstredge)
 
             if args.rec:
-                winning_region_player0, winning_region_player1 = \
-                    bdd.generalizedRecursive.generalized_recursive(arena, manager)
+                if arena.nbr_functions > 1:
+                    winning_region_player0, _ = bdd.generalizedRecursive.generalized_recursive(arena, manager)
+                else:
+                    winning_region_player0, _ = bdd.recursive.recursive(arena, manager)
 
             elif args.snl:
-                winning_region_player0, winning_region_player1 = \
-                    bdd.generalizedRecursive.generalized_recursive_with_psolver(arena, manager)
+                if arena.nbr_functions > 1:
+                    winning_region_player0, _ =\
+                        bdd.generalizedRecursive.generalized_recursive_with_psolver(arena, manager)
+                else:
+                    winning_region_player0, _ = bdd.recursive.recursive_with_buchi(arena, manager)
 
             else:
-                winning_region_player0, winning_region_player1 = \
-                    bdd.generalizedRecursive.generalized_recursive_with_psolver_multiple_calls(arena, manager)
+                if arena.nbr_functions > 1:
+                    winning_region_player0, _ =\
+                        bdd.generalizedRecursive.generalized_recursive_with_psolver_multiple_calls(arena, manager)
+                else:
+                    # TODO: Is psolver with multiple calls implemented for not generalized parity games ?
+                    winning_region_player0, _ =\
+                        bdd.generalizedRecursive.generalized_recursive_with_psolver_multiple_calls(arena, manager)
 
             vertex_0_dict_rep = next(manager.pick_iter(init))
             vertex_0_won_by_player0 = manager.let(vertex_0_dict_rep, winning_region_player0) == manager.true
-
-            if vertex_0_won_by_player0:
-                print("REALIZABLE")
-            else:
-                print("UNREALIZABLE")
 
         else:  # if args.bdd or default
 
@@ -241,7 +236,7 @@ if __name__ == '__main__':
             vertex_0_dict_rep = next(manager.pick_iter(all_vertices[0]))
             vertex_0_won_by_player0 = manager.let(vertex_0_dict_rep, winning_region_player0) == manager.true
 
-            if vertex_0_won_by_player0:
-                print("REALIZABLE")
-            else:
-                print("UNREALIZABLE")
+    if vertex_0_won_by_player0:
+        print("REALIZABLE")
+    else:
+        print("UNREALIZABLE")
