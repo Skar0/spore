@@ -1,0 +1,20 @@
+#!/bin/bash
+export LD_LIBRARY_PATH="lib"
+
+mkdir temp -p
+
+TLSF2GPG_COMMAND="./tlsf2gpg.sh $1"
+$TLSF2GPG_COMMAND > game.gpg
+
+export PYTHONPATH="$(pwd)/env"
+SOLVER_COMMAND="env/bin/python spore.py -gpg -par -bdd game.gpg"
+$SOLVER_COMMAND
+RES=$?
+
+if [[ $RES == 10 ]]; then
+    echo "REALIZABLE"
+elif [[ $RES == 20 ]]; then
+    echo "UNREALIZABLE"
+else
+    echo "UNKNOWN"
+fi
