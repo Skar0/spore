@@ -3,7 +3,7 @@ A prototype symbolic implementation of partial solvers for (generalized) parity 
 
 SPORE was developed by
 * Charly Delfosse, University of Mons ([website](http://math.umons.ac.be/staff/Delfosse.Charly/))
-* Christophe Grandmont, University of Mons
+* Christophe Grandmont, University of Mons ([website](https://informatique.umons.ac.be/staff/Grandmont.Christophe/))
 * Gaëtan Staquet, University of Mons ([website](http://informatique.umons.ac.be/staff/Staquet.Gaetan/))
 * Clément Tamines, University of Mons ([website](https://clement.tamin.es))
 

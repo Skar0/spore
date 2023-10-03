@@ -16,7 +16,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 # $1 is the command line parameter given to spore_LTL_toolchain_fbdd.sh; it corresponds to the .tlsf file
-./create_parity_automata.sh $1 "game"
+./scripts/create_parity_automata.sh $1 "game"
 # the generated automata are put in automata/game/ (see create_parity_automata.sh)
-python spore.py -gpg -fbdd -dynord "automata/game/data.txt"
+python3 spore.py -gpg -fbdd -dynord "automata/game/data.txt"
 # the game is then solved using spore
