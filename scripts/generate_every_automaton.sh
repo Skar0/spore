@@ -6,5 +6,5 @@ tlsf2gpgpath="tlsf2gpg"
 for f in ${files}; do
     name=$(basename $f)
     echo $name
-    ./create_parity_automata.sh $f $name
+    ./scripts/create_parity_automata.sh $f $name
 done
