@@ -60,9 +60,10 @@ def generalized_buchi_inter_safety(arena, sets, avoid):
     return arena.vertices
 
 
-def even_tuples_iterator(depth, priorities, sizes, li, k, t):
+def tuples_iterator(depth, priorities, sizes, li, k, t):
     """
-    Iterate over the k-uples consisting of even priorities.
+    Iterate over the k-uples consisting of even or odd
+    priorities (according to the priorities instance).
     :param depth:
     :type depth:
     :param priorities:
@@ -84,7 +85,7 @@ def even_tuples_iterator(depth, priorities, sizes, li, k, t):
         for i in range(t, k):
             li[i] += 1
             if not li[i] >= sizes[i]:
-                for j in even_tuples_iterator(depth - 1, priorities, sizes, li, k, i):
+                for j in tuples_iterator(depth - 1, priorities, sizes, li, k, i):
                     yield j
             li[i] -= 1
 
@@ -189,7 +190,7 @@ def generalized_buchi_partial_solver(arena, partial_winning_region_player0, part
         # call after handling 5 and 3).
 
         # go through every k-uple of even priorities in the current level
-        for kuple in even_tuples_iterator(depth, even_priorities, even_sizes, [0] * arena.nbr_functions,
+        for kuple in tuples_iterator(depth, even_priorities, even_sizes, [0] * arena.nbr_functions,
                                           arena.nbr_functions, 0):
 
             # we now will compute a generalized buchi inter safety game
@@ -232,34 +233,6 @@ def generalized_buchi_partial_solver(arena, partial_winning_region_player0, part
 
     return arena, partial_winning_region_player0, partial_winning_region_player1
 
-
-def odd_tuples_iterator(depth, priorities, sizes, li, k, t):
-    """
-    Iterate over the k-uples consisting of even priorities.
-    :param depth:
-    :type depth:
-    :param priorities:
-    :type priorities:
-    :param sizes:
-    :type sizes:
-    :param li:
-    :type li:
-    :param k:
-    :type k:
-    :param t:
-    :type t:
-    """
-
-    if depth == 0:
-        yield [priorities[index][element] for index, element in enumerate(li)]
-
-    else:
-        for i in range(t, k):
-            li[i] += 1
-            if not li[i] >= sizes[i]:
-                for j in even_tuples_iterator(depth - 1, priorities, sizes, li, k, i):
-                    yield j
-            li[i] -= 1
 
 def generalized_buchi_partial_solver_inverted_players(arena, partial_winning_region_player0, partial_winning_region_player1):
     """
@@ -360,7 +333,7 @@ def generalized_buchi_partial_solver_inverted_players(arena, partial_winning_reg
         # function
 
         # go through every k-uple of odd priorities in the current level
-        for kuple in odd_tuples_iterator(depth, odd_priorities, odd_sizes, [0] * arena.nbr_functions,
+        for kuple in tuples_iterator(depth, odd_priorities, odd_sizes, [0] * arena.nbr_functions,
                                           arena.nbr_functions, 0):
 
             # we now will compute a generalized buchi inter safety game
